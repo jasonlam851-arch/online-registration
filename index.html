@@ -5,11 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>中華文化週活動報名與查詢系統</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fcf8f2; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .registration-container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(139,69,19,0.1); width: 100%; max-width: 580px; border-top: 6px solid #b22222; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fcf8f2; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; }
+        .registration-container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(139,69,19,0.1); width: 100%; max-width: 580px; border-top: 6px solid #b22222; position: relative; box-sizing: border-box; }
         h2 { margin-top: 0; color: #b22222; text-align: center; margin-bottom: 5px; font-size: 24px; }
         .notice-banner { background-color: #fff5f5; border: 1px solid #ffe3e3; color: #d93838; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 14px; }
         
+        /* 管理員登入按鈕與區塊樣式 */
+        .admin-trigger-btn { position: absolute; top: 15px; right: 20px; background: none; border: 1px solid #cccccc; color: #666666; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.3s; }
+        .admin-trigger-btn:hover { border-color: #b22222; color: #b22222; }
+        .admin-panel { background-color: #f9f9f9; border: 1px dashed #cccccc; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none; }
+        .admin-panel h3 { margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        .admin-login-form { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .admin-login-form input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex: 1; min-width: 120px; font-size: 14px; }
+        .admin-btn { background-color: #444444; color: white; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .admin-btn:hover { background-color: #222222; }
+        .admin-logout-btn { background-color: #d9534f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 10px; }
+        .admin-secret-content { background-color: #fff; border: 1px solid #ecc; padding: 12px; border-radius: 4px; margin-top: 10px; }
+        .red-alert { color: #ff0000; font-weight: bold; }
+        .admin-link { display: inline-block; margin-top: 5px; color: #0066cc; font-weight: bold; text-decoration: underline; word-break: break-all; }
+        
+        /* Tab 三分頁樣式 */
         .tab-container { display: flex; width: 100%; margin-bottom: 20px; border-bottom: 2px solid #eeeeee; }
         .tab-btn { flex: 1; text-align: center; padding: 12px; font-weight: bold; cursor: pointer; color: #777777; font-size: 15px; }
         .tab-btn.active { color: #b22222; border-bottom: 3px solid #b22222; }
@@ -46,8 +61,26 @@
 <body>
 
 <div class="registration-container">
+    <button class="admin-trigger-btn" onclick="toggleAdminPanel()">⚙️ 管理員登入</button>
+
     <h2>中華文化週活動報名系統</h2>
     <div class="notice-banner">💡 中文學會優先報名，名額有限，先到先得！</div>
+    
+    <div id="adminPanel" class="admin-panel">
+        <h3>🔐 管理員控制台</h3>
+        <div id="adminLoginForm" class="admin-login-form">
+            <input type="text" id="adminAcc" placeholder="管理員帳號">
+            <input type="password" id="adminPwd" placeholder="密碼">
+            <button class="admin-btn" onclick="handleAdminLogin()">登入</button>
+        </div>
+        <div id="adminContent" style="display: none;">
+            <div class="admin-secret-content">
+                <p class="red-alert">⚠️ 以下是中華文化報名表格連結（請勿分享給學生）</p>
+                <p>連結：<a class="admin-link" href="https://docs.google.com/spreadsheets/d/18jLhLWrz9y_vB9flRzoaXNQuqua-7-g_1Y9C1W2FJGY/edit?usp=sharing" target="_blank">點此開啟 Excel 報名表單</a></p>
+            </div>
+            <button class="admin-logout-btn" onclick="handleAdminLogout()">安全登出</button>
+        </div>
+    </div>
     
     <div class="tab-container">
         <div class="tab-btn active" id="tabRegister" onclick="switchTab('register')">活動報名</div>
@@ -125,12 +158,42 @@
 </div>
 
 <script>
-    // 🔗 你的 Google 網址已經在此處安全內嵌
+    // 🔗 你的 Google Apps Script 後台部署網址
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZ2isiKG92FLsxaqryKWxYtIUjUC9JVcgZ5f-fpIXTPR30Qncz1h9SW8EGa5xr2VnUUg/exec";
 
     window.onload = function() {
         fetchCounts();
     };
+
+    // 管理員控制面板展開/收合
+    function toggleAdminPanel() {
+        const panel = document.getElementById('adminPanel');
+        panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+    }
+
+    // 處理管理員登入
+    function handleAdminLogin() {
+        const acc = document.getElementById('adminAcc').value.trim();
+        const pwd = document.getElementById('adminPwd').value;
+        
+        if (acc === "admin001" && pwd === "Asdf1234") {
+            document.getElementById('adminLoginForm').style.display = 'none';
+            document.getElementById('adminContent').style.style.display = 'block';
+            alert("管理員驗證成功！");
+        } else {
+            alert("帳號或密碼錯誤，請重新輸入！");
+        }
+    }
+
+    // 處理管理員登出
+    function handleAdminLogout() {
+        document.getElementById('adminAcc').value = "";
+        document.getElementById('adminPwd').value = "";
+        document.getElementById('adminContent').style.display = 'none';
+        document.getElementById('adminLoginForm').style.display = 'flex';
+        document.getElementById('adminPanel').style.display = 'none';
+        alert("已成功安全登出管理員後台。");
+    }
 
     function fetchCounts() {
         const selectElement = document.getElementById('regSession');
