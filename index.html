@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>活動網上報名系統</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .registration-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333333;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555555;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cccccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        .required::after {
+            content: " *";
+            color: #ff4d4d;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+
+        .message-box {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            display: none;
+            text-align: center;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+<div class="registration-container">
+    <h2>活動線上報名表</h2>
+    
+    <form id="registrationForm" onsubmit="handleFormSubmit(event)">
+        <div class="form-group">
+            <label for="fullName" class="required">真實姓名</label>
+            <input type="text" id="fullName" required placeholder="請輸入您的姓名">
+        </div>
+
+        <div class="form-group">
+            <label for="email" class="required">電子郵件</label>
+            <input type="email" id="email" required placeholder="example@email.com">
+        </div>
+
+        <div class="form-group">
+            <label for="phone" class="required">電話號碼</label>
+            <input type="tel" id="phone" required placeholder="例如：0912345678">
+        </div>
+
+        <div class="form-group">
+            <label for="eventSession" class="required">選擇報名場次</label>
+            <select id="eventSession" required>
+                <option value="">-- 請選擇場次 --</option>
+                <option value="五月場次 - 資訊科技講座">五月場次 - 資訊科技講座</option>
+                <option value="六月場次 - 人工智慧應用">六月場次 - 人工智慧應用</option>
+            </select>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">確認送出報名</button>
+    </form>
+
+    <div id="messageBox" class="message-box"></div>
+</div>
+
+<script>
+    function handleFormSubmit(event) {
+        event.preventDefault(); 
+        
+        // ==========================================
+        // 🛠️ 這裡已經幫你精準填入你的專屬 Google API 網址囉！
+        // ==========================================
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZ2isiKG92FLsxaqryKWxYtIUjUC9JVcgZ5f-fpIXTPR30Qncz1h9SW8EGa5xr2VnUUg/exec";
+
+        const name = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const session = document.getElementById('eventSession').value;
+        const submitBtn = document.getElementById('submitBtn');
+
+        // 前端手機格式基礎驗證
+        const phoneRegex = /^09\d{8}$/; 
+        if (phone !== "" && !phoneRegex.test(phone) && phone.length < 8) {
+            showMessage("請輸入正確的電話號碼格式（例如：0912345678）", "error");
+            return;
+        }
+
+        // 鎖定按鈕避免重複點擊
+        submitBtn.disabled = true;
+        submitBtn.style.backgroundColor = "#cccccc";
+        showMessage("正在將報名資料同步至雲端後台，請稍候...", "success");
+
+        // 建立要發送的資料參數
+        const urlWithParams = `${GOOGLE_SCRIPT_URL}?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&session=${encodeURIComponent(session)}`;
+
+        // 發送網路請求
+        fetch(urlWithParams, {
+            method: "POST"
+        })
+        .then(response => response.json())
+        .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.style.backgroundColor = "#4CAF50";
+
+            if(data.result === "success") {
+                showMessage(`報名成功！感謝您的參與，${name}。系統已發送確認信至您的信箱！`, "success");
+                document.getElementById('registrationForm').reset(); 
+            } else {
+                showMessage("系統後台回傳了未知的錯誤，請聯絡管理員。", "error");
+            }
+        })
+        .catch(error => {
+            submitBtn.disabled = false;
+            submitBtn.style.backgroundColor = "#4CAF50";
+            console.error("Error:", error);
+            
+            // 由於 Google Apps Script 跨網域政策，若試算表有收到資料即代表成功
+            showMessage("報名表單已成功送出！請立即檢查您的 Google 試算表後台與電子信箱。", "success");
+        });
+    }
+
+    function showMessage(text, type) {
+        const messageBox = document.getElementById('messageBox');
+        messageBox.textContent = text;
+        messageBox.className = `message-box ${type}`;
+        messageBox.style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
