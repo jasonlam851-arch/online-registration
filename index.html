@@ -10,10 +10,10 @@
         h2 { margin-top: 0; color: #b22222; text-align: center; margin-bottom: 5px; font-size: 24px; }
         .notice-banner { background-color: #fff5f5; border: 1px solid #ffe3e3; color: #d93838; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 14px; }
         
-        /* 管理員登入按鈕與區塊樣式 */
+        /* 管理員登入區塊樣式 */
         .admin-trigger-btn { position: absolute; top: 15px; right: 20px; background: none; border: 1px solid #cccccc; color: #666666; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.3s; }
         .admin-trigger-btn:hover { border-color: #b22222; color: #b22222; }
-        .admin-panel { background-color: #f9f9f9; border: 1px dashed #cccccc; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none; }
+        .admin-panel { background-color: #f9f9f9; border: 1px dashed #cccccc; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none; width: 100%; box-sizing: border-box; }
         .admin-panel h3 { margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
         .admin-login-form { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
         .admin-login-form input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex: 1; min-width: 120px; font-size: 14px; }
@@ -21,8 +21,8 @@
         .admin-btn:hover { background-color: #222222; }
         .admin-logout-btn { background-color: #d9534f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 10px; }
         .admin-secret-content { background-color: #fff; border: 1px solid #ecc; padding: 12px; border-radius: 4px; margin-top: 10px; }
-        .red-alert { color: #ff0000; font-weight: bold; }
-        .admin-link { display: inline-block; margin-top: 5px; color: #0066cc; font-weight: bold; text-decoration: underline; word-break: break-all; }
+        .red-alert { color: #ff0000; font-weight: bold; margin: 0 0 8px 0; }
+        .admin-link { display: inline-block; color: #0066cc; font-weight: bold; text-decoration: underline; word-break: break-all; }
         
         /* Tab 三分頁樣式 */
         .tab-container { display: flex; width: 100%; margin-bottom: 20px; border-bottom: 2px solid #eeeeee; }
@@ -158,7 +158,7 @@
 </div>
 
 <script>
-    // 🔗 你的 Google Apps Script 後台部署網址
+    // 🔗 Google Apps Script 後台部署網址
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZ2isiKG92FLsxaqryKWxYtIUjUC9JVcgZ5f-fpIXTPR30Qncz1h9SW8EGa5xr2VnUUg/exec";
 
     window.onload = function() {
@@ -178,7 +178,7 @@
         
         if (acc === "admin001" && pwd === "Asdf1234") {
             document.getElementById('adminLoginForm').style.display = 'none';
-            document.getElementById('adminContent').style.style.display = 'block';
+            document.getElementById('adminContent').style.display = 'block'; // 這裡已經修正！
             alert("管理員驗證成功！");
         } else {
             alert("帳號或密碼錯誤，請重新輸入！");
@@ -195,6 +195,7 @@
         alert("已成功安全登出管理員後台。");
     }
 
+    // 抓取雲端即時人數
     function fetchCounts() {
         const selectElement = document.getElementById('regSession');
         fetch(`${GOOGLE_SCRIPT_URL}?method=get_counts`, { method: "POST" })
@@ -214,6 +215,7 @@
         });
     }
 
+    // 切換分頁控制
     function switchTab(type) {
         document.getElementById('messageBox').style.display = 'none';
         document.getElementById('queryResultArea').style.display = 'none';
@@ -237,6 +239,7 @@
         }
     }
 
+    // 提交表單處理核心邏輯
     function handleSubmit(event, type) {
         event.preventDefault();
         const messageBox = document.getElementById('messageBox');
