@@ -3,187 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>活動網上報名系統</title>
+    <title>中華文化週活動報名系統</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .registration-container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            width: 100%;
-            max-width: 500px;
-        }
-
-        h2 {
-            margin-top: 0;
-            color: #333333;
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555555;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #cccccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        input:focus, select:focus {
-            border-color: #4CAF50;
-            outline: none;
-        }
-
-        .required::after {
-            content: " *";
-            color: #ff4d4d;
-        }
-
-        .submit-btn {
-            width: 100%;
-            background-color: #4CAF50;
-            color: white;
-            padding: 14px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .submit-btn:hover {
-            background-color: #45a049;
-        }
-
-        .message-box {
-            margin-top: 20px;
-            padding: 12px;
-            border-radius: 6px;
-            display: none;
-            text-align: center;
-            font-weight: bold;
-        }
-        .success { background-color: #d4edda; color: #155724; }
-        .error { background-color: #f8d7da; color: #721c24; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fcf8f2; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .registration-container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(139,69,19,0.1); width: 100%; max-width: 550px; border-top: 6px solid #b22222; }
+        h2 { margin-top: 0; color: #b22222; text-align: center; margin-bottom: 5px; font-size: 24px; }
+        .notice-banner { background-color: #fff5f5; border: 1px solid #ffe3e3; color: #d93838; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 14px; }
+        
+        /* Tab 切換分頁樣式 */
+        .tab-container { display: table; width: 100%; margin-bottom: 20px; border-bottom: 2px solid #eeeeee; }
+        .tab-btn { display: table-cell; text-align: center; padding: 12px; font-weight: bold; cursor: pointer; color: #777777; }
+        .tab-btn.active { color: #b22222; border-bottom: 3px solid #b22222; }
+        
+        .form-section { display: none; }
+        .form-section.active { display: block; }
+        
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #444444; }
+        input[type="text"], input[type="email"], input[type="tel"], select { width: 100%; padding: 12px; border: 1px solid #cccccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        input:focus, select:focus { border-color: #b22222; outline: none; }
+        .required::after { content: " *"; color: #ff4d4d; }
+        
+        .submit-btn { width: 100%; background-color: #b22222; color: white; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
+        .submit-btn:hover { background-color: #8b1a1a; }
+        .cancel-btn { background-color: #555555; }
+        .cancel-btn:hover { background-color: #333333; }
+        
+        .message-box { margin-top: 20px; padding: 15px; border-radius: 6px; display: none; text-align: center; font-weight: bold; line-height: 1.5; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #e2f0fe; color: #004085; border: 1px solid #b8daff; }
     </style>
 </head>
 <body>
 
 <div class="registration-container">
-    <h2>活動線上報名表</h2>
+    <h2>中華文化週活動報名表格</h2>
+    <div class="notice-banner">💡 中文學會優先報名，名額有限，先到先得！</div>
     
-    <form id="registrationForm" onsubmit="handleFormSubmit(event)">
-        <div class="form-group">
-            <label for="fullName" class="required">真實姓名</label>
-            <input type="text" id="fullName" required placeholder="請輸入您的姓名">
-        </div>
+    <div class="tab-container">
+        <div class="tab-btn active" id="tabRegister" onclick="switchTab('register')">活動報名</div>
+        <div class="tab-btn" id="tabCancel" onclick="switchTab('cancel')">取消報名系統</div>
+    </div>
+    
+    <div id="registerSection" class="form-section active">
+        <form id="regForm" onsubmit="handleSubmit(event, 'register')">
+            <div class="form-group">
+                <label for="regName" class="required">學生真實姓名</label>
+                <input type="text" id="regName" required placeholder="請輸入姓名">
+            </div>
+            <div class="form-group">
+                <label for="regId" class="required">學生編號 (必須為5位數字)</label>
+                <input type="text" id="regId" required placeholder="例如：24000" maxlength="5" pattern="\d{5}">
+            </div>
+            <div class="form-group">
+                <label for="regClass" class="required">班別</label>
+                <select id="regClass" required>
+                    <option value="">-- 請選擇班別 --</option>
+                    <option value="1A">1A</option><option value="1B">1B</option><option value="1C">1C</option><option value="1D">1D</option><option value="1E">1E</option>
+                    <option value="2A">2A</option><option value="2B">2B</option><option value="2C">2C</option><option value="2D">2D</option><option value="2E">2E</option>
+                    <option value="3A">3A</option><option value="3B">3B</option><option value="3C">3C</option><option value="3D">3D</option><option value="3E">3E</option>
+                    <option value="4A">4A</option><option value="4B">4B</option><option value="4C">4C</option><option value="4D">4D</option><option value="4E">4E</option>
+                    <option value="5A">5A</option><option value="5B">5B</option><option value="5C">5C</option><option value="5D">5D</option><option value="5E">5E</option>
+                    <option value="6A">6A</option><option value="6B">6B</option><option value="6C">6C</option><option value="6D">6D</option><option value="6E">6E</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="regSession" class="required">選擇活動場次</label>
+                <select id="regSession" required>
+                    <option value="">-- 請選擇活動與時間 --</option>
+                    <option value="中華文化試食區 - 第一場 (09:00-09:30)">中華文化試食區 - 第一場 (09:00-09:30)</option>
+                    <option value="中華文化試食區 - 第二場 (11:00-11:30)">中華文化試食區 - 第二場 (11:00-11:30)</option>
+                    <option value="中華文化體驗活動區 - 第一場 (09:00-09:30)">中華文化體驗活動區 - 第一場 (09:00-09:30)</option>
+                    <option value="中華文化體驗活動區 - 第二場 (11:00-11:30)">中華文化體驗活動區 - 第二場 (11:00-11:30)</option>
+                </select>
+            </div>
+            <button type="submit" class="submit-btn" id="regBtn">確認送出報名</button>
+        </form>
+    </div>
 
-        <div class="form-group">
-            <label for="email" class="required">電子郵件</label>
-            <input type="email" id="email" required placeholder="example@email.com">
-        </div>
-
-        <div class="form-group">
-            <label for="phone" class="required">電話號碼</label>
-            <input type="tel" id="phone" required placeholder="例如：0912345678">
-        </div>
-
-        <div class="form-group">
-            <label for="eventSession" class="required">選擇報名場次</label>
-            <select id="eventSession" required>
-                <option value="">-- 請選擇場次 --</option>
-                <option value="五月場次 - 資訊科技講座">五月場次 - 資訊科技講座</option>
-                <option value="六月場次 - 人工智慧應用">六月場次 - 人工智慧應用</option>
-            </select>
-        </div>
-
-        <button type="submit" class="submit-btn" id="submitBtn">確認送出報名</button>
-    </form>
+    <div id="cancelSection" class="form-section">
+        <form id="canForm" onsubmit="handleSubmit(event, 'cancel')">
+            <div class="form-group">
+                <label for="canName" class="required">學生姓名</label>
+                <input type="text" id="canName" required placeholder="請輸入當初登記的姓名">
+            </div>
+            <div class="form-group">
+                <label for="canId" class="required">學生編號 (5位數字)</label>
+                <input type="text" id="canId" required placeholder="例如：24000" maxlength="5" pattern="\d{5}">
+            </div>
+            <div class="form-group">
+                <label for="canSession" class="required">要取消的場次</label>
+                <select id="canSession" required>
+                    <option value="">-- 請選擇欲取消的場次 --</option>
+                    <option value="中華文化試食區 - 第一場 (09:00-09:30)">中華文化試食區 - 第一場 (09:00-09:30)</option>
+                    <option value="中華文化試食區 - 第二場 (11:00-11:30)">中華文化試食區 - 第二場 (11:00-11:30)</option>
+                    <option value="中華文化體驗活動區 - 第一場 (09:00-09:30)">中華文化體驗活動區 - 第一場 (09:00-09:30)</option>
+                    <option value="中華文化體驗活動區 - 第二場 (11:00-11:30)">中華文化體驗活動區 - 第二場 (11:00-11:30)</option>
+                </select>
+            </div>
+            <button type="submit" class="submit-btn cancel-btn" id="canBtn">確認取消報名</button>
+        </form>
+    </div>
 
     <div id="messageBox" class="message-box"></div>
 </div>
 
 <script>
-    function handleFormSubmit(event) {
-        event.preventDefault(); 
+    // 已經幫你精準填入最新的 Google Apps Script 網址
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZ2isiKG92FLsxaqryKWxYtIUjUC9JVcgZ5f-fpIXTPR30Qncz1h9SW8EGa5xr2VnUUg/exec";
+
+    // 分頁切換功能
+    function switchTab(type) {
+        document.getElementById('messageBox').style.display = 'none';
+        if(type === 'register') {
+            document.getElementById('tabRegister').className = 'tab-btn active';
+            document.getElementById('tabCancel').className = 'tab-btn';
+            document.getElementById('registerSection').className = 'form-section active';
+            document.getElementById('cancelSection').className = 'form-section';
+        } else {
+            document.getElementById('tabRegister').className = 'tab-btn';
+            document.getElementById('tabCancel').className = 'tab-btn active';
+            document.getElementById('registerSection').className = 'form-section';
+            document.getElementById('cancelSection').className = 'form-section active';
+        }
+    }
+
+    // 表單送出主要邏輯
+    function handleSubmit(event, type) {
+        event.preventDefault();
         
-        // ==========================================
-        // 🛠️ 這裡已經幫你精準填入你的專屬 Google API 網址囉！
-        // ==========================================
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZ2isiKG92FLsxaqryKWxYtIUjUC9JVcgZ5f-fpIXTPR30Qncz1h9SW8EGa5xr2VnUUg/exec";
+        const messageBox = document.getElementById('messageBox');
+        let name, studentId, userClass, session, submitBtn;
 
-        const name = document.getElementById('fullName').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-        const session = document.getElementById('eventSession').value;
-        const submitBtn = document.getElementById('submitBtn');
-
-        // 前端手機格式基礎驗證
-        const phoneRegex = /^09\d{8}$/; 
-        if (phone !== "" && !phoneRegex.test(phone) && phone.length < 8) {
-            showMessage("請輸入正確的電話號碼格式（例如：0912345678）", "error");
-            return;
+        if (type === 'register') {
+            name = document.getElementById('regName').value.trim();
+            studentId = document.getElementById('regId').value.trim();
+            userClass = document.getElementById('regClass').value;
+            session = document.getElementById('regSession').value;
+            submitBtn = document.getElementById('regBtn');
+            
+            if(!/^\d{5}$/.test(studentId)) {
+                showMessage("學生編號格式錯誤，必須剛好為5位數字（例如：24000）", "error");
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.style.backgroundColor = "#cccccc";
+            showMessage("正在檢查名額並同步至雲端，請稍候...", "info");
+        } else {
+            name = document.getElementById('canName').value.trim();
+            studentId = document.getElementById('canId').value.trim();
+            userClass = ""; 
+            session = document.getElementById('canSession').value;
+            submitBtn = document.getElementById('canBtn');
+            
+            if(!confirm("確定要取消此場次的報名嗎？此動作將同步自 Excel 移出資料。")) {
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.style.backgroundColor = "#cccccc";
+            showMessage("正在從雲端系統註銷您的名額，請稍候...", "info");
         }
 
-        // 鎖定按鈕避免重複點擊
-        submitBtn.disabled = true;
-        submitBtn.style.backgroundColor = "#cccccc";
-        showMessage("正在將報名資料同步至雲端後台，請稍候...", "success");
+        const urlWithParams = `${GOOGLE_SCRIPT_URL}?method=${type}&name=${encodeURIComponent(name)}&studentId=${encodeURIComponent(studentId)}&userClass=${encodeURIComponent(userClass)}&session=${encodeURIComponent(session)}`;
 
-        // 建立要發送的資料參數
-        const urlWithParams = `${GOOGLE_SCRIPT_URL}?name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&session=${encodeURIComponent(session)}`;
-
-        // 發送網路請求
-        fetch(urlWithParams, {
-            method: "POST"
-        })
+        fetch(urlWithParams, { method: "POST" })
         .then(response => response.json())
         .then(data => {
             submitBtn.disabled = false;
-            submitBtn.style.backgroundColor = "#4CAF50";
+            submitBtn.style.backgroundColor = (type === 'register') ? "#b22222" : "#555555";
 
-            if(data.result === "success") {
-                showMessage(`報名成功！感謝您的參與，${name}。系統已發送確認信至您的信箱！`, "success");
-                document.getElementById('registrationForm').reset(); 
+            if (type === 'register') {
+                if (data.result === "success") {
+                    let room = session.includes("試食區") ? "2003" : "2004";
+                    showMessage(`你已成功報名，請準時前往 ${room} 室，如未能出席，需提前通知。`, "success");
+                    document.getElementById('regForm').reset();
+                } else if (data.result === "full") {
+                    showMessage("對不起，該場次名額已滿！", "error");
+                } else {
+                    showMessage("報名失敗，請聯絡系統管理員。", "error");
+                }
             } else {
-                showMessage("系統後台回傳了未知的錯誤，請聯絡管理員。", "error");
+                if (data.result === "cancel_success") {
+                    showMessage(`已成功為您取消【${session}】的報名，Excel 資料已同步移除。`, "success");
+                    document.getElementById('canForm').reset();
+                } else if (data.result === "cancel_not_found") {
+                    showMessage("找不到對應的報名紀錄！請檢查姓名、編號及場次是否輸入正確。", "error");
+                } else {
+                    showMessage("取消失敗，請聯絡管理員。", "error");
+                }
             }
         })
         .catch(error => {
             submitBtn.disabled = false;
-            submitBtn.style.backgroundColor = "#4CAF50";
+            submitBtn.style.backgroundColor = (type === 'register') ? "#b22222" : "#555555";
             console.error("Error:", error);
-            
-            // 由於 Google Apps Script 跨網域政策，若試算表有收到資料即代表成功
-            showMessage("報名表單已成功送出！請立即檢查您的 Google 試算表後台與電子信箱。", "success");
+            showMessage("網路通訊異常或網址填寫錯誤，請重新檢查後台部署設定。", "error");
         });
     }
 
