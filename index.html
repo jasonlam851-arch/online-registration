@@ -6,9 +6,13 @@
     <title>中華文化週活動報名與查詢系統</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fcf8f2; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; }
-        .registration-container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(139,69,19,0.1); width: 100%; max-width: 580px; border-top: 6px solid #b22222; position: relative; box-sizing: border-box; }
         
-        /* v0.05 版本標籤 */
+        /* 基礎容器樣式 - 動態寬度適配 */
+        .registration-container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(139,69,19,0.1); width: 100%; max-width: 580px; border-top: 6px solid #b22222; position: relative; box-sizing: border-box; transition: max-width 0.4s ease; }
+        
+        /* 管理員登入後，強制切換為全網頁大滿版 */
+        .registration-container.full-page { max-width: 95% !important; width: 1300px; }
+        
         .version-tag { position: absolute; top: 15px; left: 20px; font-size: 12px; color: #aaaaaa; font-family: monospace; font-weight: bold; }
         
         .lantern-header { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 15px; margin-bottom: 5px; }
@@ -17,33 +21,36 @@
         
         h2 { margin: 0; color: #b22222; text-align: center; font-size: 24px; }
         .notice-banner { background-color: #fff5f5; border: 1px solid #ffe3e3; color: #d93838; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 14px; }
-        
-        /* 學生登入區塊 */
-        .student-login-box h3 { color: #444; text-align: center; margin-bottom: 20px; font-size: 18px; }
-        .error-msg { color: #ff0000; font-size: 13px; font-weight: bold; margin-top: 5px; display: none; text-align: center; }
-        .forgot-pwd { display: block; text-align: center; margin-top: 15px; font-size: 13px; color: #666; text-decoration: underline; cursor: pointer; }
+        .maint-block-banner { background-color: #ffeeba; border: 1px solid #ffe3e3; color: #856404; padding: 15px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px; display: none; }
 
-        /* 載入動畫遮罩 */
-        #loaderOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #b22222; border-radius: 50%; animation: spin 1s linear infinite; }
+        /* 大廳分流按鈕 */
+        .portal-box { display: flex; flex-direction: column; gap: 15px; padding: 20px 10px; }
+        .portal-btn { padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; transition: background 0.2s; }
+        .btn-student-gate { background-color: #b22222; }
+        .btn-student-gate:hover { background-color: #8b1a1a; }
+        .btn-admin-gate { background-color: #444444; }
+        .btn-admin-gate:hover { background-color: #222222; }
+        
+        /* 密碼可見性包裝與返回按鈕 */
+        .pwd-container { position: relative; width: 100%; }
+        .pwd-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px; user-select: none; }
+        .back-to-portal { background: none; border: 1px solid #ccc; color: #666; padding: 5px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-bottom: 15px; font-weight: bold; }
+        .back-to-portal:hover { border-color: #b22222; color: #b22222; }
+
+        /* 錯誤紅字提示與忘記密碼區 */
+        .error-msg { color: #ff0000; font-size: 13px; font-weight: bold; margin-top: 8px; display: none; text-align: center; background-color: #fff0f0; padding: 6px; border-radius: 4px; border: 1px solid #ffd1d1; }
+        .forgot-pwd-btn { display: block; text-align: center; margin-top: 15px; font-size: 13px; color: #666; text-decoration: underline; cursor: pointer; }
+        .forgot-panel { background: #f9f9f9; border: 1px solid #e0e0e0; padding: 12px; border-radius: 6px; margin-top: 12px; display: none; }
+
+        /* 轉圈圈遮罩動畫 */
+        #loaderOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .spinner { width: 55px; height: 55px; border: 5px solid #f3f3f3; border-top: 5px solid #b22222; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loader-text { margin-top: 15px; font-weight: bold; color: #b22222; }
+        .loader-text { margin-top: 15px; font-weight: bold; color: #b22222; font-size: 15px; }
 
-        /* 狀態列 */
+        /* 學生主排版 */
         .user-status-bar { display: flex; justify-content: space-between; align-items: center; background-color: #fcf3f3; border: 1px solid #f5dadb; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; font-weight: bold; color: #b22222; font-size: 14px; }
-        .logout-btn { background-color: #ffffff; color: #d9534f; border: 1px solid #d9534f; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; }
-        
-        /* 管理員登入 */
-        .admin-trigger-btn { position: absolute; top: 15px; right: 20px; background: none; border: 1px solid #cccccc; color: #666666; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; }
-        .admin-panel { background-color: #f9f9f9; border: 1px dashed #cccccc; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none; width: 100%; box-sizing: border-box; }
-        .admin-secret-content { background-color: #fff; border: 1px solid #ecc; padding: 12px; border-radius: 4px; margin-top: 10px; }
-
-        /* 更新日誌樣式 (v0.05 完美復原) */
-        .changelog-box { margin-top: 15px; background-color: #f0f4f8; border-left: 4px solid #0066cc; padding: 10px 15px; border-radius: 0 4px 4px 0; font-size: 13px; color: #333; text-align: left; }
-        .changelog-box h4 { margin: 0 0 5px 0; color: #0066cc; font-size: 14px; }
-        .changelog-box ul { margin: 0; padding-left: 20px; line-height: 1.6; }
-
-        /* 分頁 */
+        .logout-btn { background-color: #ffffff; color: #d9534f; border: 1px solid #d9534f; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; }
         .tab-container { display: flex; width: 100%; margin-bottom: 20px; border-bottom: 2px solid #eeeeee; }
         .tab-btn { flex: 1; text-align: center; padding: 12px; font-weight: bold; cursor: pointer; color: #777777; }
         .tab-btn.active { color: #b22222; border-bottom: 3px solid #b22222; }
@@ -59,18 +66,45 @@
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .info { background-color: #e2f0fe; color: #004085; border: 1px solid #b8daff; }
+
+        /* 管理員專屬全螢幕看板排版 */
+        .admin-fullscreen-dashboard { display: none; width: 100%; }
+        .admin-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-top: 15px; }
+        @media (max-width: 900px) { .admin-grid { grid-template-columns: 1fr; } }
+        .admin-card { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; box-sizing: border-box; }
+        .admin-card h4 { margin-top: 0; color: #333; font-size: 16px; border-bottom: 2px solid #ccc; padding-bottom: 6px; }
+        
+        /* 獨立開關視覺 */
+        .maint-toggle-zone { background: #fff3cd; border: 1px solid #ffeeba; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .maint-status-indicator { font-weight: bold; color: #856404; }
+        .maint-btn { padding: 6px 15px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; }
+        .maint-btn.off { background: #d9534f; color: white; }
+        .maint-btn.on { background: #5cb85c; color: white; }
+
+        /* 數據管理寬表格 */
+        .table-responsive { width: 100%; overflow-x: auto; margin-top: 10px; background: white; border: 1px solid #ddd; border-radius: 6px; }
+        .admin-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        .admin-table th, .admin-table td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+        .admin-table th { background: #f4f4f4; color: #333; font-weight: bold; }
+        .admin-table tr.highlight-cancel { background-color: #fff0f0; }
+        .action-row-btns { display: flex; gap: 5px; align-items: center; }
+        .act-btn { padding: 4px 8px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; }
+        .act-btn-check { background-color: #5cb85c; }
+        .act-btn-del { background-color: #d9534f; }
+        .admin-select-change { padding: 4px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; }
+
+        .changelog-box { margin-top: 15px; background-color: #f0f4f8; border-left: 4px solid #0066cc; padding: 10px 15px; border-radius: 4px; font-size: 13px; }
     </style>
 </head>
 <body>
 
 <div id="loaderOverlay">
     <div class="spinner"></div>
-    <div class="loader-text">正在登入中...</div>
+    <div class="loader-text" id="loaderText">正在登入中...</div>
 </div>
 
-<div class="registration-container">
-    <div class="version-tag">0.05v</div>
-    <button class="admin-trigger-btn" onclick="toggleAdminPanel()">⚙️ 管理員登入</button>
+<div class="registration-container" id="mainContainer">
+    <div class="version-tag">0.06v</div>
 
     <div class="lantern-header">
         <span class="lantern">🏮</span><span class="lantern" style="animation-delay: 0.3s;">🏮</span>
@@ -79,56 +113,66 @@
     </div>
     
     <div id="mainNotice" class="notice-banner">💡 中文學會優先報名，名額有限，先到先得！</div>
+    <div id="maintBlockBanner" class="maint-block-banner">🛠️ 系統目前正在更新維護中，暫停開放學生權限。</div>
     
-    <div id="adminPanel" class="admin-panel">
-        <h3>🔐 管理員控制台</h3>
-        <div id="adminLoginForm">
-            <input type="text" id="adminAcc" placeholder="管理員帳號">
-            <input type="password" id="adminPwd" placeholder="密碼">
-            <button class="submit-btn" onclick="handleAdminLogin()" style="margin-top:10px;">登入</button>
-        </div>
-        <div id="adminContent" style="display: none;">
-            <div class="admin-secret-content">
-                <p style="color:red; font-weight:bold;">⚠️ 請勿分享報名 Excel 給學生</p>
-                <a href="https://docs.google.com/spreadsheets/d/18jLhLWrz9y_vB9flRzoaXNQuqua-7-g_1Y9C1W2FJGY/edit?usp=sharing" target="_blank">點此開啟報名清單</a>
-            </div>
-            
-            <div class="changelog-box">
-                <h4>📜 系統更新日誌</h4>
-                <ul>
-                    <li><strong>v0.05</strong> - 修正報名成功自動登出缺陷，改為動態無縫重置表單。</li>
-                    <li><strong>v0.05</strong> - 優化管理員權限，登入後可同步進入系統操作測試。</li>
-                    <li><strong>v0.05</strong> - 狀態寫入欄位精準調整對接至 Excel 的 H 欄。</li>
-                    <li><strong>v0.04</strong> - 引入登入緩衝動畫、忘記密碼提示與紅字防呆檢錯。</li>
-                    <li><strong>v0.03</strong> - 精準對照「工作表二」資料庫進行登入身分比對。</li>
-                </ul>
-            </div>
-            <button class="logout-btn" onclick="location.reload()" style="margin-top:10px;">安全登出管理員</button>
-        </div>
+    <div id="portalWrapper" class="portal-box">
+        <button class="portal-btn btn-student-gate" onclick="switchGate('student_login')">👨‍🎓 進入學生報名系統</button>
+        <button class="portal-btn btn-admin-gate" onclick="switchGate('admin_login')">⚙️ 進入管理員控制台</button>
     </div>
-    
-    <div id="studentLoginWrapper" class="student-login-box">
-        <h3>請先登入學生帳號</h3>
+
+    <div id="studentLoginWrapper" style="display: none;">
+        <button class="back-to-portal" onclick="switchGate('portal')">⬅️ 返回身份選擇</button>
+        <h3 style="margin-top:0; text-align:center;">學生驗證登入</h3>
         <form onsubmit="handleStudentLogin(event)">
             <div class="form-group">
                 <label class="required">學生帳號</label>
-                <input type="text" id="stuAcc" required placeholder="請輸入帳號">
+                <input type="text" id="stuAcc" required placeholder="請輸入您的學生帳號">
             </div>
             <div class="form-group" style="margin-bottom: 5px;">
                 <label class="required">密碼</label>
-                <input type="password" id="stuPwd" required placeholder="請輸入密碼">
+                <div class="pwd-container">
+                    <input type="password" id="stuPwd" required placeholder="請輸入密碼">
+                    <button type="button" class="pwd-toggle" onclick="togglePassword('stuPwd')">👁️</button>
+                </div>
             </div>
             <div id="loginError" class="error-msg">帳號或密碼輸入錯誤，請重新登入！</div>
-            
             <button type="submit" class="submit-btn" style="margin-top: 15px;">確認登入</button>
-            <span class="forgot-pwd" onclick="alert('請聯絡 管理員！')">忘記密碼</span>
+            <span class="forgot-pwd-btn" onclick="toggleForgotPanel()">忘記密碼？</span>
+        </form>
+        
+        <div id="forgotPanel" class="forgot-panel">
+            <label style="font-size: 13px; font-weight: bold;">請輸入您的學生帳號核對：</label>
+            <div style="display: flex; gap: 8px; margin-top: 5px;">
+                <input type="text" id="forgotAcc" placeholder="輸入帳號" style="padding: 6px; font-size: 14px;">
+                <button type="button" onclick="handleRetrievePassword()" style="background:#444; color:white; border:none; padding: 0 15px; border-radius:6px; font-weight:bold; cursor:pointer;">找回密碼</button>
+            </div>
+            <div id="forgotResult" style="margin-top: 8px; font-size: 13px; font-weight: bold; display: none;"></div>
+        </div>
+    </div>
+
+    <div id="adminLoginWrapper" style="display: none;">
+        <button class="back-to-portal" onclick="switchGate('portal')">⬅️ 返回身份選擇</button>
+        <h3 style="margin-top:0; text-align:center; color:#444;">安全認證：管理員登入</h3>
+        <form onsubmit="handleAdminLogin(event)">
+            <div class="form-group">
+                <label class="required">管理員帳號</label>
+                <input type="text" id="adminAcc" required placeholder="管理員專屬帳號">
+            </div>
+            <div class="form-group">
+                <label class="required">管理認證密碼</label>
+                <div class="pwd-container">
+                    <input type="password" id="adminPwd" required placeholder="管理認證密碼">
+                    <button type="button" class="pwd-toggle" onclick="togglePassword('adminPwd')">👁️</button>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn" style="background-color:#444;">驗證權限並進駐</button>
         </form>
     </div>
 
     <div id="mainSystemWrapper" style="display: none;">
         <div class="user-status-bar">
             <span id="userStatusText">歡迎您</span>
-            <button class="logout-btn" onclick="location.reload()">登出系統</button>
+            <button class="logout-btn" onclick="logoutSystem()">登出系統</button>
         </div>
         <div class="tab-container">
             <div class="tab-btn active" id="tabRegister" onclick="switchTab('register')">活動報名</div>
@@ -159,12 +203,157 @@
         </div>
         <div id="messageBox" class="message-box"></div>
     </div>
+
+    <div id="adminFullscreenDashboard" class="admin-fullscreen-dashboard">
+        <div class="user-status-bar" style="background-color: #333; border-color: #222; color: #fff;">
+            <span>🛡️ 高級系統管理控制台 (測試與代管模式)</span>
+            <button class="logout-btn" onclick="logoutSystem()" style="color:#fff; background:#d9534f; border:none;">安全登出管理員</button>
+        </div>
+
+        <div class="maint-toggle-zone">
+            <div>
+                <span style="font-weight:bold; color:#333;">🔒 學生登入管控：</span>
+                <span id="maintStatus" class="maint-status-indicator">檢查中...</span>
+            </div>
+            <button id="maintBtn" class="maint-btn" onclick="toggleMaintenance()">更換狀態</button>
+        </div>
+
+        <div class="admin-grid">
+            <div class="admin-card">
+                <h4>✍️ 代學生辦理登記報名</h4>
+                <form id="adminProxyRegForm" onsubmit="handleAdminProxyRegister(event)">
+                    <div class="form-group" style="margin-bottom:10px;">
+                        <label>學生姓名</label>
+                        <input type="text" id="proxyName" required placeholder="例如：張小明">
+                    </div>
+                    <div class="form-group" style="margin-bottom:10px;">
+                        <label>班別</label>
+                        <input type="text" id="proxyClass" required placeholder="例如：1A">
+                    </div>
+                    <div class="form-group" style="margin-bottom:10px;">
+                        <label>學生編號 (學號)</label>
+                        <input type="text" id="proxyId" required placeholder="例如：2026001">
+                    </div>
+                    <div class="form-group" style="margin-bottom:12px;">
+                        <label>選擇活動場次</label>
+                        <select id="proxySession" required><option value="">載入最新餘額中...</option></select>
+                    </div>
+                    <button type="submit" class="submit-btn" style="background:#444; padding:10px;">執行代辦報名</button>
+                </form>
+                
+                <div class="changelog-box" style="margin-top:20px;">
+                    <h4>📜 v0.06 系統升級日誌</h4>
+                    <ul>
+                        <li><strong>v0.06</strong> - 實現管理員專屬全網頁寬版看板。</li>
+                        <li><strong>v0.06</strong> - 導入代辦報名、審核請取消、強制變更與除名功能。</li>
+                        <li><strong>v0.06</strong> - 新增持久化全域「系統維護鎖」，一鍵控管學生登入。</li>
+                        <li><strong>v0.06</strong> - 支援密碼 👁️ 明隱碼自由切換與無彈窗密碼自主找回。</li>
+                        <li><strong>v0.05</strong> - 徹底修正報名後自動登出缺陷，改為無縫表單調校。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <h4>📊 報名名單實時連線管理庫 (已對齊 Excel H欄)</h4>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>姓名(班別)</th>
+                                <th>學號</th>
+                                <th>已報活動場次 (可於下方直接變更)</th>
+                                <th>狀態</th>
+                                <th>核心操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody">
+                            <tr><td colspan="5" style="text-align:center;">正在連線拉取雲端數據清單...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
+    // 🔗 請換上您在 Apps Script 部署得到的最新網址
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZ2isiKG92FLsxaqryKWxYtIUjUC9JVcgZ5f-fpIXTPR30Qncz1h9SW8EGa5xr2VnUUg/exec";
+    
+    let currentMaintState = false;
     let currentUser = null;
+    let isAdminMode = false;
 
+    const sessionOptions = [
+        "中華文化試食區 - 第一場 (09:00-09:30)",
+        "中華文化試食區 - 第二場 (11:00-11:30)",
+        "中華文化體驗活動區 - 第一場 (09:00-09:30)",
+        "中華文化體驗活動區 - 第二場 (11:00-11:30)"
+    ];
+
+    window.onload = function() {
+        // 初始化載入檢查系統維護開關
+        fetch(`${GOOGLE_SCRIPT_URL}?method=check_system`, { method: "POST" })
+        .then(res => res.json()).then(data => {
+            currentMaintState = data.maintenance;
+            if (currentMaintState) {
+                document.getElementById('maintBlockBanner').style.display = 'block';
+            }
+        });
+    };
+
+    // 路由門戶分流切換
+    function switchGate(gate) {
+        document.getElementById('portalWrapper').style.display = 'none';
+        document.getElementById('studentLoginWrapper').style.display = 'none';
+        document.getElementById('adminLoginWrapper').style.display = 'none';
+        document.getElementById('loginError').style.display = 'none';
+        
+        if(gate === 'portal') {
+            document.getElementById('portalWrapper').style.display = 'flex';
+        } else if(gate === 'student_login') {
+            document.getElementById('studentLoginWrapper').style.display = 'block';
+        } else if(gate === 'admin_login') {
+            document.getElementById('adminLoginWrapper').style.display = 'block';
+        }
+    }
+
+    // 密碼明隱碼切換
+    function togglePassword(id) {
+        const input = document.getElementById(id);
+        input.type = (input.type === 'password') ? 'text' : 'password';
+    }
+
+    // 學生忘記密碼自主查詢
+    function toggleForgotPanel() {
+        const p = document.getElementById('forgotPanel');
+        p.style.display = (p.style.display === 'block') ? 'none' : 'block';
+    }
+    function handleRetrievePassword() {
+        const acc = document.getElementById('forgotAcc').value.trim();
+        const resDiv = document.getElementById('forgotResult');
+        if(!acc) { alert("請先輸入帳號！"); return; }
+        
+        resDiv.style.display = 'block';
+        resDiv.style.color = '#004085';
+        resDiv.textContent = "正在資料庫中檢索，請稍候...";
+
+        fetch(`${GOOGLE_SCRIPT_URL}?method=find_password&account=${encodeURIComponent(acc)}`, { method: "POST" })
+        .then(res => res.json()).then(data => {
+            if(data.result === "success") {
+                resDiv.style.color = '#5cb85c';
+                resDiv.innerHTML = `查詢成功！您的登入密碼為：<span style="font-size:16px; background:#e6f4ea; padding:2px 6px; border-radius:4px;">${data.password}</span>`;
+            } else {
+                resDiv.style.color = '#ff0000';
+                resDiv.textContent = data.message;
+            }
+        }).catch(() => {
+            resDiv.textContent = "資料庫通訊失敗，請稍後再試。";
+        });
+    }
+
+    // 學生驗證登入
     function handleStudentLogin(event) {
         event.preventDefault();
         const acc = document.getElementById('stuAcc').value;
@@ -173,6 +362,7 @@
         const loader = document.getElementById('loaderOverlay');
 
         errorDiv.style.display = 'none';
+        document.getElementById('loaderText').textContent = "正在登入中...";
         loader.style.display = 'flex'; 
 
         fetch(`${GOOGLE_SCRIPT_URL}?method=student_login&account=${encodeURIComponent(acc)}&password=${encodeURIComponent(pwd)}`, { method: "POST" })
@@ -181,19 +371,46 @@
             loader.style.display = 'none';
             if (data.result === "success") {
                 currentUser = data;
-                document.getElementById('userStatusText').textContent = `歡迎您：${data.name} (${data.userClass})`;
+                isAdminMode = false;
+                document.getElementById('userStatusText').textContent = `歡迎您：${data.name} (${data.userClass}) [學號：${data.id}]`;
                 document.getElementById('studentLoginWrapper').style.display = 'none';
                 document.getElementById('mainSystemWrapper').style.display = 'block';
                 fetchCounts();
+            } else if (data.result === "maintenance_block") {
+                alert(data.message);
             } else {
                 errorDiv.style.display = 'block'; 
             }
         }).catch(() => {
             loader.style.display = 'none';
-            alert("系統繁忙，請稍後再試！");
+            alert("伺服器繁忙，請確認部署網址是否正確。");
         });
     }
 
+    // 管理員驗證登入
+    function handleAdminLogin(event) {
+        event.preventDefault();
+        const acc = document.getElementById('adminAcc').value.trim();
+        const pwd = document.getElementById('adminPwd').value;
+
+        if (acc === "admin001" && pwd === "Asdf1234") {
+            isAdminMode = true;
+            currentUser = { name: "系統管理員", id: "00000", userClass: "ADMIN" };
+            
+            document.getElementById('adminLoginWrapper').style.display = 'none';
+            // 啟用管理員獨立全頁面看板
+            document.getElementById('mainContainer').classList.add('full-page');
+            document.getElementById('adminFullscreenDashboard').style.display = 'block';
+            
+            // 載入管理數據與開關狀態
+            fetchAdminData();
+            alert("管理權限驗證成功！已成功部署專屬管理網頁。");
+        } else {
+            alert("管理員密碼錯誤，拒絕進駐！");
+        }
+    }
+
+    // 讀取名額
     function fetchCounts() {
         fetch(`${GOOGLE_SCRIPT_URL}?method=get_counts`, { method: "POST" })
         .then(res => res.json()).then(resData => {
@@ -202,33 +419,115 @@
                 let r = resData.data[s];
                 html += `<option value="${s}" ${r===0?'disabled':''}>${s} (剩 ${r} 個名額)</option>`;
             }
-            document.getElementById('regSession').innerHTML = html;
+            if(!isAdminMode) document.getElementById('regSession').innerHTML = html;
+            document.getElementById('proxySession').innerHTML = html;
         });
     }
 
-    // 管理員登入優化：解鎖後台，同時解鎖報名系統操作
-    function handleAdminLogin() {
-        if (document.getElementById('adminAcc').value === "admin001" && document.getElementById('adminPwd').value === "Asdf1234") {
-            document.getElementById('adminLoginForm').style.display = 'none';
-            document.getElementById('adminContent').style.display = 'block';
-            
-            // 同步解鎖下方系統以便管理員測試
-            currentUser = { name: "管理員", id: "00000", userClass: "ADMIN" };
-            document.getElementById('userStatusText').textContent = `歡迎您：${currentUser.name} (測試模式)`;
-            document.getElementById('studentLoginWrapper').style.display = 'none';
-            document.getElementById('mainSystemWrapper').style.display = 'block';
-            fetchCounts();
-            alert("管理員登入成功！已同步開啟報名測試系統。");
-        } else { 
-            alert("管理員帳號或密碼錯誤！"); 
+    // 管理員全網頁拉取與渲染清單
+    function fetchAdminData() {
+        fetch(`${GOOGLE_SCRIPT_URL}?method=admin_get_all`, { method: "POST" })
+        .then(res => res.json()).then(data => {
+            if(data.result === "success") {
+                // 更新維護開關按鈕顯示
+                currentMaintState = data.maintenance;
+                const mStatus = document.getElementById('maintStatus');
+                const mBtn = document.getElementById('maintBtn');
+                if(currentMaintState) {
+                    mStatus.textContent = "維護更新中 (全校學生無法登入)"; mStatus.style.color = "#d9534f";
+                    mBtn.textContent = "關閉維護 (開放學生登入)"; mBtn.className = "maint-btn on";
+                } else {
+                    mStatus.textContent = "開放運行中 (學生可自由報名)"; mStatus.style.color = "#5cb85c";
+                    mBtn.textContent = "開啟維護 (切斷學生登入)"; mBtn.className = "maint-btn off";
+                }
+
+                // 渲染名單表格
+                const tbody = document.getElementById('adminTableBody');
+                let html = "";
+                data.list.forEach(item => {
+                    let isCancelReq = item.status === "請取消";
+                    let rowClass = isCancelReq ? "class='highlight-cancel'" : "";
+                    
+                    html += `<tr ${rowClass}>
+                        <td><strong>${item.name}</strong><br><span style='color:#666;'>(${item.userClass})</span></td>
+                        <td>${item.studentId}</td>
+                        <td>
+                            <select class="admin-select-change" onchange="changeStudentSession(${item.row}, this.value)">
+                                ${sessionOptions.map(opt => `<option value="${opt}" ${item.session === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                            </select>
+                        </td>
+                        <td><span style="font-weight:bold; color:${isCancelReq?'red':'green'}">${item.status}</span></td>
+                        <td>
+                            <div class="action-row-btns">
+                                ${isCancelReq ? `<button class="act-btn act-btn-check" onclick="executeAdminAction('confirm_cancel', ${item.row})">核准取消</button>` : ''}
+                                <button class="act-btn act-btn-del" onclick="executeAdminAction('direct_cancel', ${item.row})">強制除名</button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html || "<tr><td colspan='5' style='text-align:center;'>目前尚無任何報名數據紀錄。</td></tr>";
+                fetchCounts();
+            }
+        });
+    }
+
+    // 執行管理員動作（核准、強制取消、更換場次）
+    function executeAdminAction(actionType, rowNum, extraParams = "") {
+        if(actionType==='direct_cancel' && !confirm("警告：您正在進行強制除名，確定要刪除該生的報名嗎？")) return;
+        
+        document.getElementById('loaderText').textContent = "正在同步變更雲端 Excel...";
+        document.getElementById('loaderOverlay').style.display = 'flex';
+
+        fetch(`${GOOGLE_SCRIPT_URL}?method=admin_action&action=${actionType}&row=${rowNum}${extraParams}`, { method: "POST" })
+        .then(res => res.json()).then(data => {
+            document.getElementById('loaderOverlay').style.display = 'none';
+            if(data.result === "success") {
+                fetchAdminData(); // 重新整理清單
+            } else { alert("操作失敗"); }
+        }).catch(() => document.getElementById('loaderOverlay').style.display = 'none');
+    }
+
+    // 管理員變更學生成就場次
+    function changeStudentSession(rowNum, newSessionValue) {
+        executeAdminAction('change_session', rowNum, `&newSession=${encodeURIComponent(newSessionValue)}`);
+    }
+
+    // 管理員獨立切換維護開關
+    function toggleMaintenance() {
+        let nextState = !currentMaintState;
+        if(confirm(`確定要將系統切換為 [${nextState ? '系統維護中' : '對外開放中'}] 嗎？`)) {
+            executeAdminAction('toggle_maintenance', 0, `&state=${nextState}`);
         }
     }
 
-    function toggleAdminPanel() {
-        const p = document.getElementById('adminPanel');
-        p.style.display = (p.style.display === 'block') ? 'none' : 'block';
+    // 管理員代辦學生登記
+    function handleAdminProxyRegister(event) {
+        event.preventDefault();
+        const pName = document.getElementById('proxyName').value.trim();
+        const pClass = document.getElementById('proxyClass').value.trim();
+        const pId = document.getElementById('proxyId').value.trim();
+        const pSession = document.getElementById('proxySession').value;
+
+        document.getElementById('loaderText').textContent = "管理員代辦寫入中...";
+        document.getElementById('loaderOverlay').style.display = 'flex';
+
+        let url = `${GOOGLE_SCRIPT_URL}?method=register&name=${encodeURIComponent(pName)}&studentId=${encodeURIComponent(pId)}&userClass=${encodeURIComponent(pClass)}&session=${encodeURIComponent(pSession)}`;
+        
+        fetch(url, { method: "POST" }).then(res => res.json()).then(data => {
+            document.getElementById('loaderOverlay').style.display = 'none';
+            if (data.result === "success") {
+                alert(`代辦成功！已將學生 ${pName} 寫入名單。`);
+                document.getElementById('adminProxyRegForm').reset();
+                fetchAdminData();
+            } else if (data.result === "already_registered") {
+                alert(`失敗：學生 ${pName} 此場次先前已登記過，無法重複登記。`);
+            } else {
+                alert("代辦失敗：" + data.result);
+            }
+        }).catch(() => document.getElementById('loaderOverlay').style.display = 'none');
     }
 
+    // 學生端分頁切換
     function switchTab(type) {
         document.getElementById('tabRegister').className = 'tab-btn' + (type === 'register' ? ' active' : '');
         document.getElementById('tabCancel').className = 'tab-btn' + (type === 'cancel' ? ' active' : '');
@@ -237,55 +536,54 @@
         document.getElementById('messageBox').style.display = 'none';
     }
 
-    // 報名提交優化 (v0.05 解決自動登出)
+    // 學生端報名/取消提交 (動態無痕重新加載，解決自動登出缺陷)
     function handleSubmit(event, type) {
         event.preventDefault();
         const msgBox = document.getElementById('messageBox');
-        const regBtn = document.getElementById('regBtn');
-        const canBtn = document.getElementById('canBtn');
-        
         let session = (type === 'register') ? document.getElementById('regSession').value : document.getElementById('canSession').value;
         let url = `${GOOGLE_SCRIPT_URL}?method=${type}&name=${encodeURIComponent(currentUser.name)}&studentId=${encodeURIComponent(currentUser.id)}&userClass=${encodeURIComponent(currentUser.userClass)}&session=${encodeURIComponent(session)}`;
 
-        if (type === 'cancel' && !confirm("確定要申請取消此場次嗎？")) return;
+        if (type === 'cancel' && !confirm("確定要向管理員發出取消此場次的申請嗎？")) return;
 
-        if (type === 'register') regBtn.disabled = true;
-        if (type === 'cancel') canBtn.disabled = true;
+        msgBox.textContent = "正在與雲端資料庫通訊中..."; 
+        msgBox.className = "message-box info"; msgBox.style.display = "block";
 
-        msgBox.textContent = "正在通訊中，請稍候..."; 
-        msgBox.className = "message-box info"; 
-        msgBox.style.display = "block";
-
-        fetch(url, { method: "POST" })
-        .then(res => res.json())
-        .then(data => {
-            if (type === 'register') regBtn.disabled = false;
-            if (type === 'cancel') canBtn.disabled = false;
-
+        fetch(url, { method: "POST" }).then(res => res.json()).then(data => {
             if (data.result === "success") {
                 let room = session.includes("試食區") ? "2003" : "2004";
-                msgBox.textContent = `🎉 成功報名！請準時前往 ${room} 室。如未能出席，需提前通知。`;
+                msgBox.textContent = `🎉 報名成功！請準時前往 ${room} 室。若無法出席請提前告知。`;
                 msgBox.className = "message-box success";
                 document.getElementById('regForm').reset();
-                fetchCounts(); // 刷新剩餘名額
+                fetchCounts();
             } else if (data.result === "cancel_requested") {
-                msgBox.textContent = "📋 已成功提交取消申請！狀態已變更為【請取消】，請靜待管理員審核。";
+                msgBox.textContent = "📋 取消申請成功！已通知管理員，請等待 Excel 後台審核除名。";
                 msgBox.className = "message-box success";
                 document.getElementById('canForm').reset();
                 fetchCounts();
             } else if (data.result === "already_registered") {
-                msgBox.textContent = `❌ 登記失敗！此學號先前已登記過活動：【${data.session}】，無法重複報名。`;
+                msgBox.textContent = `❌ 登記失敗：您先前已登記過場次【${data.session}】，不可重複報名。`;
                 msgBox.className = "message-box error";
             } else {
-                msgBox.textContent = "操作失敗，錯誤原因：" + data.result; 
-                msgBox.className = "message-box error";
+                msgBox.textContent = "操作失敗，後台回應：" + data.result; msgBox.className = "message-box error";
             }
-        }).catch(() => {
-            if (type === 'register') regBtn.disabled = false;
-            if (type === 'cancel') canBtn.disabled = false;
-            msgBox.textContent = "網路連線異常，但資料可能已寫入，請刷新網頁或對照 Excel。";
-            msgBox.className = "message-box error";
         });
+    }
+
+    // 全域無重置登出
+    function logoutSystem() {
+        currentUser = null;
+        isAdminMode = false;
+        document.getElementById('stuAcc').value = "";
+        document.getElementById('stuPwd').value = "";
+        document.getElementById('adminAcc').value = "";
+        document.getElementById('adminPwd').value = "";
+        document.getElementById('forgotAcc').value = "";
+        document.getElementById('forgotResult').style.display = 'none';
+        document.getElementById('mainContainer').classList.remove('full-page');
+        document.getElementById('mainSystemWrapper').style.display = 'none';
+        document.getElementById('adminFullscreenDashboard').style.display = 'none';
+        switchGate('portal');
+        alert("已安全切斷登入狀態並返回主首頁！");
     }
 </script>
 </body>
