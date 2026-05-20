@@ -8,7 +8,7 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fcf8f2; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; }
         .registration-container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(139,69,19,0.1); width: 100%; max-width: 580px; border-top: 6px solid #b22222; position: relative; box-sizing: border-box; }
         
-        /* v0.04 版本標籤 */
+        /* v0.05 版本標籤 */
         .version-tag { position: absolute; top: 15px; left: 20px; font-size: 12px; color: #aaaaaa; font-family: monospace; font-weight: bold; }
         
         .lantern-header { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 15px; margin-bottom: 5px; }
@@ -38,6 +38,11 @@
         .admin-panel { background-color: #f9f9f9; border: 1px dashed #cccccc; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none; width: 100%; box-sizing: border-box; }
         .admin-secret-content { background-color: #fff; border: 1px solid #ecc; padding: 12px; border-radius: 4px; margin-top: 10px; }
 
+        /* 更新日誌樣式 (v0.05 完美復原) */
+        .changelog-box { margin-top: 15px; background-color: #f0f4f8; border-left: 4px solid #0066cc; padding: 10px 15px; border-radius: 0 4px 4px 0; font-size: 13px; color: #333; text-align: left; }
+        .changelog-box h4 { margin: 0 0 5px 0; color: #0066cc; font-size: 14px; }
+        .changelog-box ul { margin: 0; padding-left: 20px; line-height: 1.6; }
+
         /* 分頁 */
         .tab-container { display: flex; width: 100%; margin-bottom: 20px; border-bottom: 2px solid #eeeeee; }
         .tab-btn { flex: 1; text-align: center; padding: 12px; font-weight: bold; cursor: pointer; color: #777777; }
@@ -51,9 +56,9 @@
         .required::after { content: " *"; color: #ff4d4d; }
         .submit-btn { width: 100%; background-color: #b22222; color: white; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
         .message-box { margin-top: 20px; padding: 15px; border-radius: 6px; display: none; text-align: center; font-weight: bold; }
-        .success { background-color: #d4edda; color: #155724; }
-        .error { background-color: #f8d7da; color: #721c24; }
-        .info { background-color: #e2f0fe; color: #004085; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #e2f0fe; color: #004085; border: 1px solid #b8daff; }
     </style>
 </head>
 <body>
@@ -64,7 +69,7 @@
 </div>
 
 <div class="registration-container">
-    <div class="version-tag">0.04v</div>
+    <div class="version-tag">0.05v</div>
     <button class="admin-trigger-btn" onclick="toggleAdminPanel()">⚙️ 管理員登入</button>
 
     <div class="lantern-header">
@@ -87,7 +92,18 @@
                 <p style="color:red; font-weight:bold;">⚠️ 請勿分享報名 Excel 給學生</p>
                 <a href="https://docs.google.com/spreadsheets/d/18jLhLWrz9y_vB9flRzoaXNQuqua-7-g_1Y9C1W2FJGY/edit?usp=sharing" target="_blank">點此開啟報名清單</a>
             </div>
-            <button class="logout-btn" onclick="location.reload()" style="margin-top:10px;">安全登出</button>
+            
+            <div class="changelog-box">
+                <h4>📜 系統更新日誌</h4>
+                <ul>
+                    <li><strong>v0.05</strong> - 修正報名成功自動登出缺陷，改為動態無縫重置表單。</li>
+                    <li><strong>v0.05</strong> - 優化管理員權限，登入後可同步進入系統操作測試。</li>
+                    <li><strong>v0.05</strong> - 狀態寫入欄位精準調整對接至 Excel 的 H 欄。</li>
+                    <li><strong>v0.04</strong> - 引入登入緩衝動畫、忘記密碼提示與紅字防呆檢錯。</li>
+                    <li><strong>v0.03</strong> - 精準對照「工作表二」資料庫進行登入身分比對。</li>
+                </ul>
+            </div>
+            <button class="logout-btn" onclick="location.reload()" style="margin-top:10px;">安全登出管理員</button>
         </div>
     </div>
     
@@ -119,7 +135,7 @@
             <div class="tab-btn" id="tabCancel" onclick="switchTab('cancel')">取消報名</div>
         </div>
         <div id="registerSection" class="form-section active">
-            <form onsubmit="handleSubmit(event, 'register')">
+            <form id="regForm" onsubmit="handleSubmit(event, 'register')">
                 <div class="form-group">
                     <label class="required">選擇活動場次 (餘額)</label>
                     <select id="regSession" required><option value="">載入中...</option></select>
@@ -128,17 +144,17 @@
             </form>
         </div>
         <div id="cancelSection" class="form-section">
-            <form onsubmit="handleSubmit(event, 'cancel')">
+            <form id="canForm" onsubmit="handleSubmit(event, 'cancel')">
                 <div class="form-group">
                     <label class="required">選擇欲取消場次</label>
                     <select id="canSession" required>
-                        <option value="中華文化試食區 - 第一場 (09:00-09:30)">中華文化試食區 - 第一場</option>
-                        <option value="中華文化試食區 - 第二場 (11:00-11:30)">中華文化試食區 - 第二場</option>
-                        <option value="中華文化體驗活動區 - 第一場 (09:00-09:30)">中華文化體驗活動區 - 第一場</option>
-                        <option value="中華文化體驗活動區 - 第二場 (11:00-11:30)">中華文化體驗活動區 - 第二場</option>
+                        <option value="中華文化試食區 - 第一場 (09:00-09:30)">中華文化試食區 - 第一場 (09:00-09:30)</option>
+                        <option value="中華文化試食區 - 第二場 (11:00-11:30)">中華文化試食區 - 第二場 (11:00-11:30)</option>
+                        <option value="中華文化體驗活動區 - 第一場 (09:00-09:30)">中華文化體驗活動區 - 第一場 (09:00-09:30)</option>
+                        <option value="中華文化體驗活動區 - 第二場 (11:00-11:30)">中華文化體驗活動區 - 第二場 (11:00-11:30)</option>
                     </select>
                 </div>
-                <button type="submit" class="submit-btn" style="background:#d9534f;">確認申請取消</button>
+                <button type="submit" class="submit-btn" id="canBtn" style="background:#d9534f;">確認申請取消</button>
             </form>
         </div>
         <div id="messageBox" class="message-box"></div>
@@ -157,7 +173,7 @@
         const loader = document.getElementById('loaderOverlay');
 
         errorDiv.style.display = 'none';
-        loader.style.display = 'flex'; // 顯示圓圈動畫
+        loader.style.display = 'flex'; 
 
         fetch(`${GOOGLE_SCRIPT_URL}?method=student_login&account=${encodeURIComponent(acc)}&password=${encodeURIComponent(pwd)}`, { method: "POST" })
         .then(res => res.json())
@@ -170,7 +186,7 @@
                 document.getElementById('mainSystemWrapper').style.display = 'block';
                 fetchCounts();
             } else {
-                errorDiv.style.display = 'block'; // 顯示紅色錯誤文字
+                errorDiv.style.display = 'block'; 
             }
         }).catch(() => {
             loader.style.display = 'none';
@@ -184,10 +200,28 @@
             let html = '<option value="">-- 請選擇活動 --</option>';
             for (let s in resData.data) {
                 let r = resData.data[s];
-                html += `<option value="${s}" ${r===0?'disabled':''}>${s} (剩${r}名額)</option>`;
+                html += `<option value="${s}" ${r===0?'disabled':''}>${s} (剩 ${r} 個名額)</option>`;
             }
             document.getElementById('regSession').innerHTML = html;
         });
+    }
+
+    // 管理員登入優化：解鎖後台，同時解鎖報名系統操作
+    function handleAdminLogin() {
+        if (document.getElementById('adminAcc').value === "admin001" && document.getElementById('adminPwd').value === "Asdf1234") {
+            document.getElementById('adminLoginForm').style.display = 'none';
+            document.getElementById('adminContent').style.display = 'block';
+            
+            // 同步解鎖下方系統以便管理員測試
+            currentUser = { name: "管理員", id: "00000", userClass: "ADMIN" };
+            document.getElementById('userStatusText').textContent = `歡迎您：${currentUser.name} (測試模式)`;
+            document.getElementById('studentLoginWrapper').style.display = 'none';
+            document.getElementById('mainSystemWrapper').style.display = 'block';
+            fetchCounts();
+            alert("管理員登入成功！已同步開啟報名測試系統。");
+        } else { 
+            alert("管理員帳號或密碼錯誤！"); 
+        }
     }
 
     function toggleAdminPanel() {
@@ -195,34 +229,62 @@
         p.style.display = (p.style.display === 'block') ? 'none' : 'block';
     }
 
-    function handleAdminLogin() {
-        if (document.getElementById('adminAcc').value === "admin001" && document.getElementById('adminPwd').value === "Asdf1234") {
-            document.getElementById('adminLoginForm').style.display = 'none';
-            document.getElementById('adminContent').style.display = 'block';
-        } else { alert("管理員登入失敗"); }
-    }
-
     function switchTab(type) {
         document.getElementById('tabRegister').className = 'tab-btn' + (type === 'register' ? ' active' : '');
         document.getElementById('tabCancel').className = 'tab-btn' + (type === 'cancel' ? ' active' : '');
         document.getElementById('registerSection').className = 'form-section' + (type === 'register' ? ' active' : '');
         document.getElementById('cancelSection').className = 'form-section' + (type === 'cancel' ? ' active' : '');
+        document.getElementById('messageBox').style.display = 'none';
     }
 
+    // 報名提交優化 (v0.05 解決自動登出)
     function handleSubmit(event, type) {
         event.preventDefault();
         const msgBox = document.getElementById('messageBox');
+        const regBtn = document.getElementById('regBtn');
+        const canBtn = document.getElementById('canBtn');
+        
         let session = (type === 'register') ? document.getElementById('regSession').value : document.getElementById('canSession').value;
         let url = `${GOOGLE_SCRIPT_URL}?method=${type}&name=${encodeURIComponent(currentUser.name)}&studentId=${encodeURIComponent(currentUser.id)}&userClass=${encodeURIComponent(currentUser.userClass)}&session=${encodeURIComponent(session)}`;
 
-        msgBox.textContent = "正在提交..."; msgBox.className = "message-box info"; msgBox.style.display = "block";
+        if (type === 'cancel' && !confirm("確定要申請取消此場次嗎？")) return;
 
-        fetch(url, { method: "POST" }).then(res => res.json()).then(data => {
-            if (data.result === "success" || data.result === "cancel_requested") {
-                alert("操作成功！"); location.reload();
+        if (type === 'register') regBtn.disabled = true;
+        if (type === 'cancel') canBtn.disabled = true;
+
+        msgBox.textContent = "正在通訊中，請稍候..."; 
+        msgBox.className = "message-box info"; 
+        msgBox.style.display = "block";
+
+        fetch(url, { method: "POST" })
+        .then(res => res.json())
+        .then(data => {
+            if (type === 'register') regBtn.disabled = false;
+            if (type === 'cancel') canBtn.disabled = false;
+
+            if (data.result === "success") {
+                let room = session.includes("試食區") ? "2003" : "2004";
+                msgBox.textContent = `🎉 成功報名！請準時前往 ${room} 室。如未能出席，需提前通知。`;
+                msgBox.className = "message-box success";
+                document.getElementById('regForm').reset();
+                fetchCounts(); // 刷新剩餘名額
+            } else if (data.result === "cancel_requested") {
+                msgBox.textContent = "📋 已成功提交取消申請！狀態已變更為【請取消】，請靜待管理員審核。";
+                msgBox.className = "message-box success";
+                document.getElementById('canForm').reset();
+                fetchCounts();
+            } else if (data.result === "already_registered") {
+                msgBox.textContent = `❌ 登記失敗！此學號先前已登記過活動：【${data.session}】，無法重複報名。`;
+                msgBox.className = "message-box error";
             } else {
-                msgBox.textContent = "失敗：" + data.result; msgBox.className = "message-box error";
+                msgBox.textContent = "操作失敗，錯誤原因：" + data.result; 
+                msgBox.className = "message-box error";
             }
+        }).catch(() => {
+            if (type === 'register') regBtn.disabled = false;
+            if (type === 'cancel') canBtn.disabled = false;
+            msgBox.textContent = "網路連線異常，但資料可能已寫入，請刷新網頁或對照 Excel。";
+            msgBox.className = "message-box error";
         });
     }
 </script>
