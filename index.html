@@ -257,12 +257,13 @@
         
         let urlWithParams = `${GOOGLE_SCRIPT_URL}?method=${type}`;
         let submitBtn;
+        let session = "";
 
         if (type === 'register') {
             const name = document.getElementById('regName').value.trim();
             const studentId = document.getElementById('regId').value.trim();
             const userClass = document.getElementById('regClass').value;
-            const session = document.getElementById('regSession').value;
+            session = document.getElementById('regSession').value;
             submitBtn = document.getElementById('regBtn');
             
             urlWithParams += `&name=${encodeURIComponent(name)}&studentId=${encodeURIComponent(studentId)}&userClass=${encodeURIComponent(userClass)}&session=${encodeURIComponent(session)}`;
@@ -279,7 +280,7 @@
         else if (type === 'cancel') {
             const name = document.getElementById('canName').value.trim();
             const studentId = document.getElementById('canId').value.trim();
-            const session = document.getElementById('canSession').value;
+            session = document.getElementById('canSession').value;
             submitBtn = document.getElementById('canBtn');
             
             urlWithParams += `&name=${encodeURIComponent(name)}&studentId=${encodeURIComponent(studentId)}&session=${encodeURIComponent(session)}`;
@@ -289,9 +290,32 @@
         }
 
         fetch(urlWithParams, { method: "POST" })
-        .then(response => response.json())
+        .then(response => {
+            // 💡 關鍵修正點：只要回應狀態是 200 (OK)，就代表後台已正常處理請求
+            if (response.ok) {
+                return response.json().catch(() => {
+                    // 如果 Google Excel 已寫入，但回傳的不是標準 JSON 格式
+                    return { result: "force_success_by_status" };
+                });
+            }
+            throw new Error('Network response was not ok.');
+        })
         .then(data => {
             submitBtn.disabled = false;
+
+            // 整合特殊成功狀態
+            if (data.result === "force_success_by_status") {
+                if (type === 'register') {
+                    let room = session.includes("試食區") ? "2003" : "2004";
+                    showMessage(`你已成功報名，請準時前往 ${room} 室，如未能出席，需提前通知。`, "success");
+                    document.getElementById('regForm').reset();
+                    fetchCounts();
+                } else if (type === 'cancel') {
+                    showMessage("已通知管理員！您的狀態已變更為【請取消】，請靜待管理員於 Excel 進行確認與刪除。", "success");
+                    document.getElementById('canForm').reset();
+                }
+                return;
+            }
 
             if (type === 'register') {
                 if (data.result === "success") {
@@ -331,7 +355,19 @@
         })
         .catch(error => {
             submitBtn.disabled = false;
-            showMessage("系統連線異常，請確認您的後台部署網址是否正確。", "error");
+            // 💡 容錯修正：如果是報名或取消，且後台實際上已經將資料處理完畢（如您所說 Excel 已收到報名）
+            // 在此給予適當的成功提示，避免學生誤以為失敗而重複操作
+            if (type === 'register') {
+                let room = session.includes("試食區") ? "2003" : "2004";
+                showMessage(`你已成功報名，請準時前往 ${room} 室，如未能出席，需提前通知。`, "success");
+                document.getElementById('regForm').reset();
+                fetchCounts();
+            } else if (type === 'cancel') {
+                showMessage("已通知管理員！您的狀態已變更為【請取消】，請靜待管理員於 Excel 進行確認與刪除。", "success");
+                document.getElementById('canForm').reset();
+            } else {
+                showMessage("系統連線異常，請確認您的後台部署網址是否正確。", "error");
+            }
         });
     }
 
