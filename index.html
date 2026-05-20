@@ -8,7 +8,6 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fcf8f2; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; }
         .registration-container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(139,69,19,0.1); width: 100%; max-width: 580px; border-top: 6px solid #b22222; position: relative; box-sizing: border-box; }
         
-        /* 0.03v 版本標籤樣式 */
         .version-tag { position: absolute; top: 15px; left: 20px; font-size: 12px; color: #aaaaaa; font-family: monospace; font-weight: bold; }
         
         /* 燈籠視覺設計裝飾 */
@@ -19,16 +18,11 @@
         h2 { margin: 0; color: #b22222; text-align: center; font-size: 24px; }
         .notice-banner { background-color: #fff5f5; border: 1px solid #ffe3e3; color: #d93838; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 14px; }
         
-        /* 學生登入區塊樣式 */
-        .student-login-box { padding: 10px 5px; }
-        .student-login-box h3 { color: #444; text-align: center; margin-bottom: 20px; font-size: 18px; }
-        
         /* 學生狀態顯示與登出列 */
         .user-status-bar { display: flex; justify-content: space-between; align-items: center; background-color: #fcf3f3; border: 1px solid #f5dadb; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; font-weight: bold; color: #b22222; font-size: 14px; }
         .logout-btn { background-color: #ffffff; color: #d9534f; border: 1px solid #d9534f; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
         .logout-btn:hover { background-color: #d9534f; color: #ffffff; }
 
-        /* 系統維護提示樣式 */
         .maintenance-banner { background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 16px; display: none; }
         
         /* 管理員登入區塊樣式 */
@@ -50,7 +44,7 @@
         .changelog-box h4 { margin: 0 0 5px 0; color: #0066cc; font-size: 14px; }
         .changelog-box ul { margin: 0; padding-left: 20px; line-height: 1.6; }
         
-        /* Tab 二分頁樣式 */
+        /* Tab 分頁樣式 */
         .tab-container { display: flex; width: 100%; margin-bottom: 20px; border-bottom: 2px solid #eeeeee; }
         .tab-btn { flex: 1; text-align: center; padding: 12px; font-weight: bold; cursor: pointer; color: #777777; font-size: 15px; }
         .tab-btn.active { color: #b22222; border-bottom: 3px solid #b22222; }
@@ -109,8 +103,8 @@
             <div class="changelog-box">
                 <h4>📜 系統更新日誌</h4>
                 <ul>
-                    <li><strong>v0.03</strong> - 引入「stu+學號」與「班別+學號」動態公式口令登入驗證。</li>
-                    <li><strong>v0.03</strong> - 後台 Apps Script 升級動態追蹤與新學生名單識別判定。</li>
+                    <li><strong>v0.03</strong> - 精準對照「工作表二」資料庫進行登入身分比對。</li>
+                    <li><strong>v0.03</strong> - 登入後依據資料庫動態輸出真實姓名、班別與學號。</li>
                     <li><strong>v0.03</strong> - 新增傳統燈籠(🏮)佳節視覺效果。</li>
                     <li><strong>v0.02</strong> - 擴展全校班別選項，新增鎖定維護直通機制與容錯修正。</li>
                     <li><strong>v0.01</strong> - 系統初始版本上線。</li>
@@ -120,16 +114,16 @@
         </div>
     </div>
     
-    <div id="studentLoginWrapper" class="student-login-box">
+    <div id="studentLoginWrapper" style="padding: 10px 5px;">
         <h3>🔑 請先登入學生帳號</h3>
         <form id="stuLoginForm" onsubmit="handleStudentLogin(event)">
             <div class="form-group">
                 <label for="stuAcc" class="required">學生帳號</label>
-                <input type="text" id="stuAcc" required placeholder="例如：stu24011">
+                <input type="text" id="stuAcc" required placeholder="請輸入您的學生帳號">
             </div>
             <div class="form-group">
                 <label for="stuPwd" class="required">密碼</label>
-                <input type="password" id="stuPwd" required placeholder="例如：1A24011">
+                <input type="password" id="stuPwd" required placeholder="請輸入密碼">
             </div>
             <button type="submit" class="submit-btn" id="stuLoginBtn">確認登入</button>
         </form>
@@ -148,10 +142,6 @@
         
         <div id="registerSection" class="form-section active">
             <form id="regForm" onsubmit="handleSubmit(event, 'register')">
-                <div class="form-group" id="newNameGroup" style="display:none;">
-                    <label for="regNewName" class="required">首次報名，請輸入您的真實姓名</label>
-                    <input type="text" id="regNewName" placeholder="請輸入真實姓名">
-                </div>
                 <div class="form-group">
                     <label for="regSession" class="required">選擇活動場次 (括號內顯示剩餘名額)</label>
                     <select id="regSession" required>
@@ -183,6 +173,7 @@
 </div>
 
 <script>
+    // 🔗 請精準置換為您最新部署的網頁應用程式網址
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZ2isiKG92FLsxaqryKWxYtIUjUC9JVcgZ5f-fpIXTPR30Qncz1h9SW8EGa5xr2VnUUg/exec";
     const SYSTEM_MAINTENANCE = false; 
     let isAdminLoggedIn = false;
@@ -217,7 +208,7 @@
         }
     }
 
-    // 處理連線至後台動態公式驗證學生帳密
+    // 學生登入處理（直接由工作表二輸出結果）
     function handleStudentLogin(event) {
         event.preventDefault();
         const acc = document.getElementById('stuAcc').value.trim();
@@ -225,7 +216,7 @@
         const loginBtn = document.getElementById('stuLoginBtn');
 
         loginBtn.disabled = true;
-        loginBtn.textContent = "驗證中...";
+        loginBtn.textContent = "正在核對名單...";
 
         fetch(`${GOOGLE_SCRIPT_URL}?method=student_login&account=${encodeURIComponent(acc)}&password=${encodeURIComponent(pwd)}`, { method: "POST" })
         .then(res => res.json())
@@ -234,34 +225,26 @@
             loginBtn.textContent = "確認登入";
 
             if (data.result === "success") {
+                // 將工作表二輸出的真實姓名、班別、學號綁定到當前瀏覽器
                 currentStudent = {
                     account: data.account,
                     name: data.name,
-                    id: data.id,
-                    userClass: data.userClass
+                    userClass: data.userClass,
+                    id: data.id
                 };
                 
-                // 如果是新登記的學生，顯示輸入真實姓名的欄位
-                if (data.name === "新登記學生") {
-                    document.getElementById('newNameGroup').style.display = 'block';
-                    document.getElementById('regNewName').required = true;
-                    document.getElementById('userStatusText').textContent = `歡迎您：${currentStudent.account} (${currentStudent.userClass})`;
-                } else {
-                    document.getElementById('newNameGroup').style.display = 'none';
-                    document.getElementById('regNewName').required = false;
-                    document.getElementById('userStatusText').textContent = `歡迎您：${currentStudent.name}同學 / ${currentStudent.account} (${currentStudent.userClass})`;
-                }
-
-                alert("驗證登入成功！");
+                // 登入後上方狀態列顯示：真實姓名 (班別)
+                document.getElementById('userStatusText').textContent = `歡迎您：${currentStudent.name} (${currentStudent.userClass})`;
+                alert("學生身分驗證成功！歡迎進入系統。");
                 checkMaintenanceStatus();
             } else {
-                alert("登入失敗：請確認帳號是否為 stu+學號，且密碼符合班別+學號規則！");
+                alert(data.message || "帳號或密碼錯誤，請重新輸入！");
             }
         })
         .catch(err => {
             loginBtn.disabled = false;
             loginBtn.textContent = "確認登入";
-            alert("後台線路繁忙，請確認您的後台部署網址，或稍後再試。");
+            alert("連線失敗：請確認後台部署網址是否更新並填寫正確。");
         });
     }
 
@@ -290,8 +273,8 @@
             document.getElementById('adminLoginForm').style.display = 'none';
             document.getElementById('adminContent').style.display = 'block'; 
             if (!currentStudent) {
-                currentStudent = { account: "管理員直通", name: "管理員", id: "00000", userClass: "ADMIN" };
-                document.getElementById('userStatusText').textContent = `歡迎您：${currentStudent.account}`;
+                currentStudent = { account: "admin", name: "管理員", id: "00000", userClass: "ADMIN" };
+                document.getElementById('userStatusText').textContent = `歡迎您：${currentStudent.name}`;
             }
             alert("管理員驗證成功！已成功直通系統。");
             checkMaintenanceStatus();
@@ -366,22 +349,13 @@
         if (type === 'register') {
             session = document.getElementById('regSession').value;
             submitBtn = document.getElementById('regBtn');
-            
-            // 如果是新同學，就採用他手動輸入的真實姓名；如果是老同學，就採用資料庫自動抓到的姓名
-            let finalName = currentStudent.name;
-            if (finalName === "新登記學生") {
-                finalName = document.getElementById('regNewName').value.trim();
-                currentStudent.name = finalName; // 同步更新本機名稱快取
-            }
-            
-            urlWithParams += `&name=${encodeURIComponent(finalName)}&studentId=${encodeURIComponent(currentStudent.id)}&userClass=${encodeURIComponent(currentStudent.userClass)}&session=${encodeURIComponent(session)}`;
+            urlWithParams += `&name=${encodeURIComponent(currentStudent.name)}&studentId=${encodeURIComponent(currentStudent.id)}&userClass=${encodeURIComponent(currentStudent.userClass)}&session=${encodeURIComponent(session)}`;
             submitBtn.disabled = true;
             showMessage("正在檢查名額與重複登記狀況...", "info");
         } 
         else if (type === 'cancel') {
             session = document.getElementById('canSession').value;
             submitBtn = document.getElementById('canBtn');
-            
             urlWithParams += `&name=${encodeURIComponent(currentStudent.name)}&studentId=${encodeURIComponent(currentStudent.id)}&session=${encodeURIComponent(session)}`;
             if(!confirm("您確定要向管理員申請取消此場次嗎？")) return;
             submitBtn.disabled = true;
@@ -405,7 +379,6 @@
                     let room = session.includes("試食區") ? "2003" : "2004";
                     showMessage(`你已成功報名，請準時前往 ${room} 室，如未能出席，需提前通知。`, "success");
                     document.getElementById('regForm').reset();
-                    document.getElementById('newNameGroup').style.display = 'none';
                     fetchCounts();
                 } else if (type === 'cancel') {
                     showMessage("已通知管理員！您的狀態已變更為【請取消】，請靜待管理員於 Excel 進行確認與刪除。", "success");
@@ -419,7 +392,6 @@
                     let room = session.includes("試食區") ? "2003" : "2004";
                     showMessage(`你已成功報名，請準時前往 ${room} 室，如未能出席，需提前通知。`, "success");
                     document.getElementById('regForm').reset();
-                    document.getElementById('newNameGroup').style.display = 'none';
                     fetchCounts();
                 } else if (data.result === "already_registered") {
                     showMessage(`登記失敗！學生 ${data.name} 之前已登記過活動：【${data.session}】。無法重複登記！如需更換，請向管理員申請取消。`, "error");
@@ -442,7 +414,6 @@
                 let room = session.includes("試食區") ? "2003" : "2004";
                 showMessage(`你已成功報名，請準時前往 ${room} 室，如未能出席，需提前通知。`, "success");
                 document.getElementById('regForm').reset();
-                document.getElementById('newNameGroup').style.display = 'none';
                 fetchCounts();
             } else if (type === 'cancel') {
                 showMessage("已通知管理員！您的狀態已變更為【請取消】，請靜待管理員於 Excel 進行確認與刪除。", "success");
