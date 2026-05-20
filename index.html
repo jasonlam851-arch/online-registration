@@ -2,98 +2,131 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中華文化週活動報名與查詢系統</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>中華文化週活動報名系統</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fcf8f2; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; }
+        /* 全域重置與滿版設計 */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fcf8f2; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
         
-        .registration-container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(139,69,19,0.1); width: 100%; max-width: 580px; border-top: 6px solid #b22222; position: relative; box-sizing: border-box; transition: max-width 0.4s ease; }
-        .registration-container.full-page { max-width: 95% !important; width: 1300px; }
+        /* 頂部大型標題區 */
+        .hero-header { background-color: #b22222; color: white; padding: 35px 20px; text-align: center; position: relative; box-shadow: 0 4px 15px rgba(178,34,34,0.2); }
+        .hero-header h1 { margin: 0; font-size: clamp(26px, 5vw, 42px); font-weight: 800; letter-spacing: 2px; }
         
-        .version-tag { position: absolute; top: 15px; left: 20px; font-size: 12px; color: #aaaaaa; font-family: monospace; font-weight: bold; }
-        .header-title-zone { text-align: center; margin-top: 15px; margin-bottom: 15px; }
-        h2 { margin: 0; color: #b22222; font-size: 24px; }
+        /* 多語系切換器 */
+        .lang-selector { position: absolute; top: 15px; right: 20px; }
+        .lang-selector select { padding: 6px 10px; border-radius: 4px; border: none; font-size: 14px; font-weight: bold; background-color: rgba(255,255,255,0.9); color: #b22222; cursor: pointer; outline: none; }
+
+        /* 主內容自適應容器 */
+        .content-body { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 40px 20px; box-sizing: border-box; }
+        .form-container { background-color: #ffffff; padding: 35px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.06); width: 100%; max-width: 650px; box-sizing: border-box; transition: all 0.3s ease; }
+        .form-container.admin-full { max-width: 1400px; }
         
-        .notice-banner { background-color: #fff5f5; border: 1px solid #ffe3e3; color: #d93838; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 14px; }
+        /* 版本號置於右下角 */
+        .version-tag { position: fixed; bottom: 10px; right: 15px; font-size: 12px; color: #bbbbbb; font-family: monospace; font-weight: bold; z-index: 100; pointer-events: none; }
+        
+        .notice-banner { background-color: #fff5f5; border: 1px solid #ffe3e3; color: #d93838; padding: 12px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 25px; font-size: clamp(13px, 3vw, 15px); }
         .maint-block-banner { background-color: #ffeeba; border: 1px solid #ffe3e3; color: #856404; padding: 15px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px; display: none; }
 
-        /* 門戶分流按鈕 */
-        .portal-box { display: flex; flex-direction: column; gap: 15px; padding: 20px 10px; }
-        .portal-btn { padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        /* 按鈕與表單 */
+        .portal-box { display: flex; flex-direction: column; gap: 18px; }
+        .portal-btn { padding: 16px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; color: white; transition: transform 0.1s, background 0.2s; }
+        .portal-btn:active { transform: scale(0.98); }
         .btn-student-gate { background-color: #b22222; }
         .btn-student-gate:hover { background-color: #8b1a1a; }
         .btn-admin-gate { background-color: #444444; }
         .btn-admin-gate:hover { background-color: #222222; }
         
-        /* 表單元素與防窺切換 */
         .pwd-container { position: relative; width: 100%; }
-        .pwd-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 14px; padding: 5px; user-select: none; color: #666; font-weight: bold; }
-        .back-to-portal { background: none; border: 1px solid #ccc; color: #666; padding: 5px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-bottom: 15px; font-weight: bold; }
-        .back-to-portal:hover { border-color: #b22222; color: #b22222; }
+        .pwd-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 14px; color: #666; font-weight: bold; }
+        .back-to-portal { background: none; border: 1px solid #ccc; color: #555; padding: 6px 15px; border-radius: 6px; font-size: 13px; cursor: pointer; margin-bottom: 20px; font-weight: bold; }
+        .back-to-portal:hover { border-color: #b22222; color: #b22222; background-color: #fffaf9; }
 
-        .error-msg { color: #ff0000; font-size: 13px; font-weight: bold; margin-top: 8px; display: none; text-align: center; background-color: #fff0f0; padding: 6px; border-radius: 4px; border: 1px solid #ffd1d1; }
-        .forgot-pwd-btn { display: block; text-align: center; margin-top: 15px; font-size: 13px; color: #666; text-decoration: underline; cursor: pointer; }
-        .forgot-panel { background: #f9f9f9; border: 1px solid #e0e0e0; padding: 12px; border-radius: 6px; margin-top: 12px; display: none; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; font-size: 15px; }
+        input[type="text"], input[type="password"], select { width: 100%; padding: 14px; border: 1px solid #dcdcdc; border-radius: 8px; box-sizing: border-box; font-size: 16px; transition: border 0.2s; }
+        input:focus, select:focus { border-color: #b22222; outline: none; }
+        .required::after { content: " *"; color: #ff4d4d; }
+        .submit-btn { width: 100%; background-color: #b22222; color: white; padding: 16px; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        
+        .error-msg { color: #d93838; font-size: 14px; font-weight: bold; margin-top: 10px; display: none; text-align: center; background-color: #fff0f0; padding: 8px; border-radius: 6px; border: 1px solid #ffd1d1; }
+        .forgot-pwd-btn { display: block; text-align: center; margin-top: 20px; font-size: 14px; color: #666; text-decoration: underline; cursor: pointer; }
+        .forgot-panel { background: #f4f6f8; border: 1px solid #e1e4e8; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; }
 
-        /* 平台內置自訂提示框 (Custom Modal) */
-        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: none; align-items: center; justify-content: center; }
-        .custom-modal-box { background: white; padding: 25px; border-radius: 8px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 4px 25px rgba(0,0,0,0.2); box-sizing: border-box; }
-        .custom-modal-text { font-size: 15px; font-weight: bold; color: #333; line-height: 1.6; margin-bottom: 20px; text-align: center; }
-        .custom-modal-btn-zone { display: flex; gap: 10px; justify-content: center; }
-        .modal-btn { padding: 8px 20px; font-size: 14px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; }
+        /* 自訂文字對話框 */
+        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .custom-modal-box { background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .custom-modal-text { font-size: 16px; font-weight: bold; color: #333; line-height: 1.6; margin-bottom: 25px; }
+        .custom-modal-btn-zone { display: flex; gap: 12px; justify-content: center; }
+        .modal-btn { padding: 10px 24px; font-size: 15px; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; }
         .modal-btn-confirm { background-color: #b22222; color: white; }
-        .modal-btn-cancel { background-color: #cccccc; color: #333; }
+        .modal-btn-cancel { background-color: #e0e0e0; color: #333; }
 
-        /* 進度加載遮罩 */
-        #loaderOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.85); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        /* 系統加載 */
+        #loaderOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #b22222; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loader-text { margin-top: 15px; font-weight: bold; color: #b22222; font-size: 14px; }
+        .loader-text { margin-top: 15px; font-weight: bold; color: #b22222; font-size: 15px; }
 
-        /* 內部版面排版 */
-        .user-status-bar { display: flex; justify-content: space-between; align-items: center; background-color: #fcf3f3; border: 1px solid #f5dadb; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; font-weight: bold; color: #b22222; font-size: 14px; }
-        .logout-btn { background-color: #ffffff; color: #d9534f; border: 1px solid #d9534f; padding: 4px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; }
-        .tab-container { display: flex; width: 100%; margin-bottom: 20px; border-bottom: 2px solid #eeeeee; }
-        .tab-btn { flex: 1; text-align: center; padding: 12px; font-weight: bold; cursor: pointer; color: #777777; }
+        /* 系統內部排版 */
+        .user-status-bar { display: flex; justify-content: space-between; align-items: center; background-color: #fcf3f3; border: 1px solid #f5dadb; padding: 12px 18px; border-radius: 8px; margin-bottom: 25px; font-weight: bold; color: #b22222; font-size: clamp(13px, 3vw, 15px); }
+        .logout-btn { background-color: #ffffff; color: #d93838; border: 1px solid #d93838; padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: bold; }
+        .tab-container { display: flex; width: 100%; margin-bottom: 25px; border-bottom: 2px solid #eaeaea; }
+        .tab-btn { flex: 1; text-align: center; padding: 14px; font-weight: bold; cursor: pointer; color: #888; font-size: 16px; transition: color 0.2s; }
         .tab-btn.active { color: #b22222; border-bottom: 3px solid #b22222; }
         .form-section { display: none; }
         .form-section.active { display: block; }
         
-        .form-group { margin-bottom: 18px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; color: #444444; }
-        input[type="text"], input[type="password"], select { width: 100%; padding: 12px; border: 1px solid #cccccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        .required::after { content: " *"; color: #ff4d4d; }
-        .submit-btn { width: 100%; background-color: #b22222; color: white; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .message-box { margin-top: 20px; padding: 15px; border-radius: 6px; display: none; text-align: center; font-weight: bold; }
+        .message-box { margin-top: 20px; padding: 15px; border-radius: 8px; display: none; text-align: center; font-weight: bold; font-size: 15px; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .info { background-color: #e2f0fe; color: #004085; border: 1px solid #b8daff; }
 
-        /* 管理員專屬全網頁面控制台 */
+        /* 管理員專屬面板 (RWD) */
         .admin-fullscreen-dashboard { display: none; width: 100%; }
-        .admin-grid { display: grid; grid-template-columns: 1fr 2.2fr; gap: 20px; margin-top: 15px; }
-        @media (max-width: 950px) { .admin-grid { grid-template-columns: 1fr; } }
-        .admin-card { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; box-sizing: border-box; }
-        .admin-card h4 { margin-top: 0; color: #333; font-size: 16px; border-bottom: 2px solid #ccc; padding-bottom: 6px; }
+        .admin-grid { display: grid; grid-template-columns: 1fr 2.5fr; gap: 25px; margin-top: 20px; }
+        @media (max-width: 1100px) { .admin-grid { grid-template-columns: 1fr; } }
         
-        .maint-toggle-zone { background: #fff3cd; border: 1px solid #ffeeba; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .maint-status-indicator { font-weight: bold; color: #856404; }
-        .maint-btn { padding: 6px 15px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; }
+        .admin-card { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 10px; padding: 25px; box-sizing: border-box; }
+        .admin-card h4 { margin-top: 0; color: #333; font-size: 18px; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        .maint-toggle-zone { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .maint-status-indicator { font-weight: bold; color: #856404; font-size: 15px; }
+        .maint-btn { padding: 8px 18px; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; }
         .maint-btn.off { background: #d9534f; color: white; }
         .maint-btn.on { background: #5cb85c; color: white; }
 
-        /* 數據清單表格 */
-        .table-responsive { width: 100%; overflow-x: auto; margin-top: 10px; background: white; border: 1px solid #ddd; border-radius: 6px; }
-        .admin-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
-        .admin-table th, .admin-table td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+        /* 表格設計 */
+        .table-responsive { width: 100%; overflow-x: auto; background: white; border: 1px solid #ddd; border-radius: 8px; }
+        .admin-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; white-space: nowrap; }
+        .admin-table th, .admin-table td { padding: 14px 16px; border-bottom: 1px solid #eee; }
         .admin-table th { background: #f4f4f4; color: #333; font-weight: bold; }
-        .act-btn { padding: 5px 10px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; background-color: #d9534f; }
-        .admin-select-change { padding: 4px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; }
+        .act-btn { padding: 6px 12px; font-size: 13px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; background-color: #d9534f; }
+        .admin-select-change { padding: 6px; font-size: 13px; border-radius: 4px; border: 1px solid #ccc; }
 
-        .changelog-box { margin-top: 15px; background-color: #f0f4f8; border-left: 4px solid #0066cc; padding: 10px 15px; border-radius: 4px; font-size: 13px; }
+        /* 響應式微調 */
+        @media (max-width: 600px) {
+            .content-body { padding: 20px 15px; }
+            .form-container { padding: 25px 20px; }
+            .admin-card { padding: 15px; }
+            .hero-header { padding: 25px 15px; }
+            .lang-selector { position: relative; top: 0; right: 0; margin-top: 15px; }
+        }
     </style>
 </head>
 <body>
+
+<div class="version-tag">0.07v</div>
+
+<header class="hero-header">
+    <h1 data-i18n="main_title">中華文化週活動報名系統</h1>
+    <div class="lang-selector">
+        <select id="langSelect" onchange="changeLanguage(this.value)">
+            <option value="zh-TW">繁體中文</option>
+            <option value="zh-CN">简体中文</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+</header>
 
 <div id="customModalOverlay" class="custom-modal-overlay">
     <div class="custom-modal-box">
@@ -104,178 +137,180 @@
 
 <div id="loaderOverlay">
     <div class="spinner"></div>
-    <div class="loader-text" id="loaderText">系統處理中...</div>
+    <div class="loader-text" id="loaderText" data-i18n="loading">系統處理中...</div>
 </div>
 
-<div class="registration-container" id="mainContainer">
-    <div class="version-tag">0.07v</div>
-
-    <div class="header-title-zone">
-        <h2>中華文化週活動報名系統</h2>
-    </div>
-    
-    <div id="mainNotice" class="notice-banner">💡 中文學會優先報名，名額有限，先到先得！</div>
-    <div id="maintBlockBanner" class="maint-block-banner">系統目前正在更新維護中，暫停開放學生權限。</div>
-    
-    <div id="portalWrapper" class="portal-box">
-        <button class="portal-btn btn-student-gate" onclick="switchGate('student_login')">進入學生報名系統</button>
-        <button class="portal-btn btn-admin-gate" onclick="switchGate('admin_login')">進入管理員控制台</button>
-        <div id="portalErrorMsg" class="error-msg" style="margin-top:10px;"></div>
-    </div>
-
-    <div id="studentLoginWrapper" style="display: none;">
-        <button class="back-to-portal" onclick="switchGate('portal')">返回身份選擇</button>
-        <h3 style="margin-top:0; text-align:center;">學生驗證登入</h3>
-        <form onsubmit="handleStudentLogin(event)">
-            <div class="form-group">
-                <label class="required">學生帳號</label>
-                <input type="text" id="stuAcc" required placeholder="請輸入您的學生帳號">
-            </div>
-            <div class="form-group" style="margin-bottom: 5px;">
-                <label class="required">密碼</label>
-                <div class="pwd-container">
-                    <input type="password" id="stuPwd" required placeholder="請輸入密碼">
-                    <button type="button" class="pwd-toggle" onclick="togglePassword('stuPwd')">顯示</button>
-                </div>
-            </div>
-            <div id="loginError" class="error-msg">帳號或密碼輸入錯誤，請重新登入！</div>
-            <button type="submit" class="submit-btn" style="margin-top: 15px;">確認登入</button>
-            <span class="forgot-pwd-btn" onclick="toggleForgotPanel()">忘記密碼？</span>
-        </form>
+<div class="content-body">
+    <div class="form-container" id="mainContainer">
         
-        <div id="forgotPanel" class="forgot-panel">
-            <label style="font-size: 13px; font-weight: bold;">請輸入您的學生帳號核對：</label>
-            <div style="display: flex; gap: 8px; margin-top: 5px;">
-                <input type="text" id="forgotAcc" placeholder="輸入帳號" style="padding: 6px; font-size: 14px;">
-                <button type="button" onclick="handleRetrievePassword()" style="background:#444; color:white; border:none; padding: 0 15px; border-radius:6px; font-weight:bold; cursor:pointer;">找回密碼</button>
-            </div>
-            <div id="forgotResult" style="margin-top: 8px; font-size: 13px; font-weight: bold; display: none;"></div>
+        <div id="mainNotice" class="notice-banner" data-i18n="notice">中文學會優先報名，名額有限，先到先得！</div>
+        <div id="maintBlockBanner" class="maint-block-banner" data-i18n="maint_msg">系統目前正在更新維護中，暫停開放學生權限。</div>
+        
+        <div id="portalWrapper" class="portal-box">
+            <button class="portal-btn btn-student-gate" onclick="switchGate('student_login')" data-i18n="btn_student">進入學生報名系統</button>
+            <button class="portal-btn btn-admin-gate" onclick="switchGate('admin_login')" data-i18n="btn_admin">進入管理員控制台</button>
+            <div id="portalErrorMsg" class="error-msg"></div>
         </div>
-    </div>
 
-    <div id="adminLoginWrapper" style="display: none;">
-        <button class="back-to-portal" onclick="switchGate('portal')">返回身份選擇</button>
-        <h3 style="margin-top:0; text-align:center; color:#444;">安全認證：管理員登入</h3>
-        <form onsubmit="handleAdminLogin(event)">
-            <div class="form-group">
-                <label class="required">管理員帳號</label>
-                <input type="text" id="adminAcc" required placeholder="管理員專屬帳號">
-            </div>
-            <div class="form-group">
-                <label class="required">管理認證密碼</label>
-                <div class="pwd-container">
-                    <input type="password" id="adminPwd" required placeholder="管理認證密碼">
-                    <button type="button" class="pwd-toggle" onclick="togglePassword('adminPwd')">顯示</button>
-                </div>
-            </div>
-            <button type="submit" class="submit-btn" style="background-color:#444;">驗證權限並進駐</button>
-        </form>
-    </div>
-
-    <div id="mainSystemWrapper" style="display: none;">
-        <div class="user-status-bar">
-            <span id="userStatusText">歡迎您</span>
-            <button class="logout-btn" onclick="triggerPlatformLogout()">登出系統</button>
-        </div>
-        <div class="tab-container">
-            <div class="tab-btn active" id="tabRegister" onclick="switchTab('register')">活動報名</div>
-            <div class="tab-btn" id="tabCancel" onclick="switchTab('cancel')">取消報名</div>
-        </div>
-        <div id="registerSection" class="form-section active">
-            <form id="regForm" onsubmit="handleSubmit(event, 'register')">
+        <div id="studentLoginWrapper" style="display: none;">
+            <button class="back-to-portal" onclick="switchGate('portal')" data-i18n="back_portal">返回身份選擇</button>
+            <h3 style="margin-top:0; text-align:center; color:#444;" data-i18n="stu_login_title">學生驗證登入</h3>
+            <form onsubmit="handleStudentLogin(event)">
                 <div class="form-group">
-                    <label class="required">選擇活動場次 (餘額)</label>
-                    <select id="regSession" required><option value="">載入中...</option></select>
+                    <label class="required" data-i18n="acc_label">學生帳號</label>
+                    <input type="text" id="stuAcc" required data-i18n-ph="acc_ph" placeholder="請輸入您的學生帳號">
                 </div>
-                <button type="submit" class="submit-btn" id="regBtn">確認送出報名</button>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label class="required" data-i18n="pwd_label">密碼</label>
+                    <div class="pwd-container">
+                        <input type="password" id="stuPwd" required data-i18n-ph="pwd_ph" placeholder="請輸入密碼">
+                        <button type="button" class="pwd-toggle" onclick="togglePassword('stuPwd')" data-i18n="btn_show">顯示</button>
+                    </div>
+                </div>
+                <div id="loginError" class="error-msg" data-i18n="login_err">帳號或密碼輸入錯誤，請重新登入！</div>
+                <button type="submit" class="submit-btn" style="margin-top: 20px;" data-i18n="btn_login">確認登入</button>
+                <span class="forgot-pwd-btn" onclick="toggleForgotPanel()" data-i18n="forgot_pwd">忘記密碼？</span>
+            </form>
+            
+            <div id="forgotPanel" class="forgot-panel">
+                <label style="font-size: 14px; font-weight: bold;" data-i18n="forgot_check">請輸入您的學生帳號核對：</label>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <input type="text" id="forgotAcc" data-i18n-ph="acc_ph" placeholder="輸入帳號" style="flex:1;">
+                    <button type="button" onclick="handleRetrievePassword()" style="background:#444; color:white; border:none; padding: 0 15px; border-radius:6px; font-weight:bold; cursor:pointer;" data-i18n="btn_retrieve">找回</button>
+                </div>
+                <div id="forgotResult" style="margin-top: 10px; font-size: 14px; font-weight: bold; display: none;"></div>
+            </div>
+        </div>
+
+        <div id="adminLoginWrapper" style="display: none;">
+            <button class="back-to-portal" onclick="switchGate('portal')" data-i18n="back_portal">返回身份選擇</button>
+            <h3 style="margin-top:0; text-align:center; color:#444;">安全認證：管理員登入</h3>
+            <form onsubmit="handleAdminLogin(event)">
+                <div class="form-group">
+                    <label class="required">管理員帳號</label>
+                    <input type="text" id="adminAcc" required placeholder="管理員專屬帳號">
+                </div>
+                <div class="form-group">
+                    <label class="required">管理認證密碼</label>
+                    <div class="pwd-container">
+                        <input type="password" id="adminPwd" required placeholder="管理認證密碼">
+                        <button type="button" class="pwd-toggle" onclick="togglePassword('adminPwd')" data-i18n="btn_show">顯示</button>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn" style="background-color:#444;">驗證權限並進駐</button>
             </form>
         </div>
-        <div id="cancelSection" class="form-section">
-            <form id="canForm" onsubmit="handleSubmit(event, 'cancel')">
-                <div class="form-group">
-                    <label class="required">選擇欲直接刪除的場次</label>
-                    <select id="canSession" required>
-                        <option value="中華文化試食區 - 第一場 (09:00-09:30)">中華文化試食區 - 第一場 (09:00-09:30)</option>
-                        <option value="中華文化試食區 - 第二場 (11:00-11:30)">中華文化試食區 - 第二場 (11:00-11:30)</option>
-                        <option value="中華文化體驗活動區 - 第一場 (09:00-09:30)">中華文化體驗活動區 - 第一場 (09:00-09:30)</option>
-                        <option value="中華文化體驗活動區 - 第二場 (11:00-11:30)">中華文化體驗活動區 - 第二場 (11:00-11:30)</option>
-                    </select>
-                </div>
-                <button type="submit" class="submit-btn" id="canBtn" style="background:#d9534f;">確認直接剷除名紀錄</button>
-            </form>
-        </div>
-        <div id="messageBox" class="message-box"></div>
-    </div>
 
-    <div id="adminFullscreenDashboard" class="admin-fullscreen-dashboard">
-        <div class="user-status-bar" style="background-color: #333; border-color: #222; color: #fff;">
-            <span>高級系統管理控制台</span>
-            <div>
-                <button class="logout-btn" onclick="fetchAdminData()" style="color:#fff; background:#0066cc; border:none; margin-right:8px; padding: 4px 15px;">更新實時名單</button>
-                <button class="logout-btn" onclick="triggerPlatformLogout()" style="color:#fff; background:#d9534f; border:none; padding: 4px 15px;">安全登出管理員</button>
+        <div id="mainSystemWrapper" style="display: none;">
+            <div class="user-status-bar">
+                <span id="userStatusText">歡迎您</span>
+                <button class="logout-btn" onclick="triggerPlatformLogout()" data-i18n="btn_logout">登出系統</button>
             </div>
-        </div>
-
-        <div class="maint-toggle-zone">
-            <div>
-                <span style="font-weight:bold; color:#333;">學生登入管控狀態：</span>
-                <span id="maintStatus" class="maint-status-indicator">檢查中...</span>
+            <div class="tab-container">
+                <div class="tab-btn active" id="tabRegister" onclick="switchTab('register')" data-i18n="tab_reg">活動報名</div>
+                <div class="tab-btn" id="tabCancel" onclick="switchTab('cancel')" data-i18n="tab_can">取消報名</div>
             </div>
-            <button id="maintBtn" class="maint-btn" onclick="triggerMaintToggle()">更換狀態</button>
-        </div>
-
-        <div class="admin-grid">
-            <div class="admin-card">
-                <h4>代學生辦理登記報名</h4>
-                <form id="adminProxyRegForm" onsubmit="handleAdminProxyRegister(event)">
-                    <div class="form-group" style="margin-bottom:10px;">
-                        <label>學生姓名</label>
-                        <input type="text" id="proxyName" required placeholder="張小明">
+            <div id="registerSection" class="form-section active">
+                <form id="regForm" onsubmit="handleSubmit(event, 'register')">
+                    <div class="form-group">
+                        <label class="required" data-i18n="reg_session">選擇活動場次 (餘額)</label>
+                        <select id="regSession" required><option value="">載入中...</option></select>
                     </div>
-                    <div class="form-group" style="margin-bottom:10px;">
-                        <label>班別</label>
-                        <input type="text" id="proxyClass" required placeholder="1A">
-                    </div>
-                    <div class="form-group" style="margin-bottom:10px;">
-                        <label>學生編號 (學號)</label>
-                        <input type="text" id="proxyId" required placeholder="2026001">
-                    </div>
-                    <div class="form-group" style="margin-bottom:12px;">
-                        <label>選擇活動場次</label>
-                        <select id="proxySession" required><option value="">載入最新餘額中...</option></select>
-                    </div>
-                    <button type="submit" class="submit-btn" style="background:#444; padding:10px;">執行代辦報名</button>
+                    <button type="submit" class="submit-btn" id="regBtn" data-i18n="btn_reg_submit">確認送出報名</button>
                 </form>
-                
-                <div class="changelog-box" style="margin-top:20px;">
-                    <h4>系統更新日誌</h4>
-                    <ul>
-                        <li><strong>v0.07</strong> - 全面精簡移除了可能干擾排版的圖標符號。</li>
-                        <li><strong>v0.07</strong> - 實現全新開啟維護模式下完全阻斷學生進入介面。</li>
-                        <li><strong>v0.07</strong> - 新增管理端不跳轉、不登出的「更新實時名單」同步按鈕。</li>
-                        <li><strong>v0.07</strong> - 變更取消邏輯為直接從 Excel 清除資料行，不留殘留紀錄。</li>
-                        <li><strong>v0.07</strong> - 全面導入網頁內置自訂文字提示框架，杜絕網頁彈窗。</li>
-                    </ul>
+            </div>
+            <div id="cancelSection" class="form-section">
+                <form id="canForm" onsubmit="handleSubmit(event, 'cancel')">
+                    <div class="form-group">
+                        <label class="required" data-i18n="can_session">取消場次</label>
+                        <select id="canSession" required>
+                            <option value="中華文化試食區 - 第一場 (09:00-09:30)">中華文化試食區 - 第一場 (09:00-09:30)</option>
+                            <option value="中華文化試食區 - 第二場 (11:00-11:30)">中華文化試食區 - 第二場 (11:00-11:30)</option>
+                            <option value="中華文化體驗活動區 - 第一場 (09:00-09:30)">中華文化體驗活動區 - 第一場 (09:00-09:30)</option>
+                            <option value="中華文化體驗活動區 - 第二場 (11:00-11:30)">中華文化體驗活動區 - 第二場 (11:00-11:30)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="submit-btn" id="canBtn" style="background:#d9534f;" data-i18n="btn_can_submit">確認取消報名</button>
+                </form>
+            </div>
+            <div id="messageBox" class="message-box"></div>
+        </div>
+
+        <div id="adminFullscreenDashboard" class="admin-fullscreen-dashboard">
+            <div class="user-status-bar" style="background-color: #333; border-color: #222; color: #fff;">
+                <span>高級系統管理控制台</span>
+                <div style="display:flex; gap:10px;">
+                    <button class="logout-btn" onclick="fetchAdminData()" style="color:#fff; background:#0066cc; border:none;">更新實時名單</button>
+                    <button class="logout-btn" onclick="triggerPlatformLogout()" style="color:#fff; background:#d9534f; border:none;">安全登出</button>
                 </div>
             </div>
 
-            <div class="admin-card">
-                <h4>報名名單實時連線管理庫 (直接同步 Excel 狀態)</h4>
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>姓名(班別)</th>
-                                <th>學號</th>
-                                <th>已報活動場次 (下拉可直接變更)</th>
-                                <th>狀態</th>
-                                <th>核心操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminTableBody">
-                            <tr><td colspan="5" style="text-align:center;">正在連線拉取雲端數據清單...</td></tr>
-                        </tbody>
-                    </table>
+            <div class="maint-toggle-zone">
+                <div>
+                    <span style="font-weight:bold; color:#333;">學生通道狀態：</span>
+                    <span id="maintStatus" class="maint-status-indicator">檢查中...</span>
+                </div>
+                <button id="maintBtn" class="maint-btn" onclick="triggerMaintToggle()">更換狀態</button>
+            </div>
+
+            <div class="admin-grid">
+                <div style="display:flex; flex-direction:column; gap:25px;">
+                    <div class="admin-card">
+                        <h4>代學生辦理登記</h4>
+                        <form id="adminProxyRegForm" onsubmit="handleAdminProxyRegister(event)">
+                            <div class="form-group" style="margin-bottom:12px;">
+                                <label>學生姓名</label>
+                                <input type="text" id="proxyName" required placeholder="張小明">
+                            </div>
+                            <div class="form-group" style="margin-bottom:12px;">
+                                <label>班別</label>
+                                <input type="text" id="proxyClass" required placeholder="1A">
+                            </div>
+                            <div class="form-group" style="margin-bottom:12px;">
+                                <label>學號</label>
+                                <input type="text" id="proxyId" required placeholder="2026001">
+                            </div>
+                            <div class="form-group" style="margin-bottom:15px;">
+                                <label>活動場次</label>
+                                <select id="proxySession" required><option value="">載入中...</option></select>
+                            </div>
+                            <button type="submit" class="submit-btn" style="background:#444; padding:12px;">執行代辦報名</button>
+                        </form>
+                    </div>
+
+                    <div class="admin-card">
+                        <h4 style="color:#b22222;">活動狀態與名額配置總覽</h4>
+                        <div class="table-responsive">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr><th>活動名稱</th><th>場次</th><th>時間</th><th>總額</th><th>剩餘</th></tr>
+                                </thead>
+                                <tbody id="adminQuotaTable">
+                                    <tr><td colspan="5" style="text-align:center;">載入中...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <h4>實時報名名單管理庫</h4>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>姓名(班別)</th>
+                                    <th>學號</th>
+                                    <th>已報活動場次 (可直接變更)</th>
+                                    <th>狀態</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTableBody">
+                                <tr><td colspan="5" style="text-align:center;">正在連線拉取雲端數據清單...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -283,12 +318,13 @@
 </div>
 
 <script>
-    // 請換上您在 Apps Script 部署得到的最新網址
+    // 【重要】請在此替換為您最新的 Google Apps Script 部署網址
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZ2isiKG92FLsxaqryKWxYtIUjUC9JVcgZ5f-fpIXTPR30Qncz1h9SW8EGa5xr2VnUUg/exec";
     
     let currentMaintState = false;
     let currentUser = null;
     let isAdminMode = false;
+    let currentLang = 'zh-TW';
 
     const sessionOptions = [
         "中華文化試食區 - 第一場 (09:00-09:30)",
@@ -297,59 +333,107 @@
         "中華文化體驗活動區 - 第二場 (11:00-11:30)"
     ];
 
-    window.onload = function() {
-        syncSystemStatus();
+    // 多語系字典
+    const i18nDict = {
+        'zh-TW': {
+            main_title: "中華文化週活動報名系統", notice: "中文學會優先報名，名額有限，先到先得！", maint_msg: "系統目前正在更新維護中，暫停開放學生權限。",
+            btn_student: "進入學生報名系統", btn_admin: "進入管理員控制台", back_portal: "返回身份選擇",
+            stu_login_title: "學生驗證登入", acc_label: "學生帳號", pwd_label: "密碼", acc_ph: "請輸入您的學生帳號", pwd_ph: "請輸入密碼", btn_show: "顯示", btn_hide: "隱藏",
+            login_err: "帳號或密碼輸入錯誤，請重新登入！", btn_login: "確認登入", forgot_pwd: "忘記密碼？", forgot_check: "請輸入您的學生帳號核對：", btn_retrieve: "找回",
+            btn_logout: "登出系統", tab_reg: "活動報名", tab_can: "取消報名", reg_session: "選擇活動場次 (餘額)", btn_reg_submit: "確認送出報名",
+            can_session: "取消場次", btn_can_submit: "確認取消報名", loading: "系統處理中...", alert_confirm: "確認", alert_cancel: "取消",
+            maint_kick: "管理員已開啟強制維護模式，您已被系統安全登出。"
+        },
+        'zh-CN': {
+            main_title: "中华文化周活动报名系统", notice: "中文学会优先报名，名额有限，先到先得！", maint_msg: "系统目前正在更新维护中，暂停开放学生权限。",
+            btn_student: "进入学生报名系统", btn_admin: "进入管理员控制台", back_portal: "返回身份选择",
+            stu_login_title: "学生验证登录", acc_label: "学生账号", pwd_label: "密码", acc_ph: "请输入您的学生账号", pwd_ph: "请输入密码", btn_show: "显示", btn_hide: "隐藏",
+            login_err: "账号或密码输入错误，请重新登录！", btn_login: "确认登录", forgot_pwd: "忘记密码？", forgot_check: "请输入您的学生账号核对：", btn_retrieve: "找回",
+            btn_logout: "退出系统", tab_reg: "活动报名", tab_can: "取消报名", reg_session: "选择活动场次 (余额)", btn_reg_submit: "确认提交报名",
+            can_session: "取消场次", btn_can_submit: "确认取消报名", loading: "系统处理中...", alert_confirm: "确认", alert_cancel: "取消",
+            maint_kick: "管理员已开启强制维护模式，您已被系统安全登出。"
+        },
+        'en': {
+            main_title: "Culture Week Registration System", notice: "Priority for Chinese Club, limited quotas!", maint_msg: "System is under maintenance. Student access suspended.",
+            btn_student: "Student Registration Portal", btn_admin: "Admin Dashboard", back_portal: "Back to Portal",
+            stu_login_title: "Student Login", acc_label: "Student ID", pwd_label: "Password", acc_ph: "Enter your Student ID", pwd_ph: "Enter Password", btn_show: "Show", btn_hide: "Hide",
+            login_err: "Incorrect ID or Password!", btn_login: "Login", forgot_pwd: "Forgot Password?", forgot_check: "Verify your Student ID:", btn_retrieve: "Retrieve",
+            btn_logout: "Logout", tab_reg: "Register", tab_can: "Cancel", reg_session: "Select Session (Quota)", btn_reg_submit: "Submit Registration",
+            can_session: "Select Session to Cancel", btn_can_submit: "Confirm Cancellation", loading: "Processing...", alert_confirm: "Confirm", alert_cancel: "Cancel",
+            maint_kick: "System maintenance initiated. You have been safely logged out."
+        }
     };
 
-    function syncSystemStatus() {
+    function changeLanguage(lang) {
+        currentLang = lang;
+        const dict = i18nDict[lang];
+        document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = dict[el.getAttribute('data-i18n')]; });
+        document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = dict[el.getAttribute('data-i18n-ph')]; });
+        if (!isAdminMode && document.getElementById('regSession').options.length > 1) fetchCounts();
+    }
+
+    function formatSessionText(sessionName, remain) {
+        if (currentLang === 'en') return `${sessionName} (Left: ${remain})`;
+        if (currentLang === 'zh-CN') return `${sessionName} (剩 ${remain} 名额)`;
+        return `${sessionName} (剩 ${remain} 名額)`;
+    }
+
+    window.onload = function() { syncSystemStatus(); };
+
+    // 全域強制心跳掃描：每 5 秒偵測一次維護狀態，若開啟即強制踢出學生
+    setInterval(() => {
         fetch(`${GOOGLE_SCRIPT_URL}?method=check_system`, { method: "POST" })
-        .then(res => res.json()).then(data => {
+        .then(r => r.json()).then(data => {
             currentMaintState = data.maintenance;
             const banner = document.getElementById('maintBlockBanner');
-            if (currentMaintState) {
-                banner.style.display = 'block';
-            } else {
-                banner.style.display = 'none';
+            banner.style.display = currentMaintState ? 'block' : 'none';
+            
+            if (currentMaintState && !isAdminMode) {
+                const inLogin = document.getElementById('studentLoginWrapper').style.display === 'block';
+                const inSystem = document.getElementById('mainSystemWrapper').style.display === 'block';
+                if (inLogin || inSystem) {
+                    forceLogoutToPortal();
+                    showPlatformAlert(i18nDict[currentLang].maint_kick);
+                }
             }
+        }).catch(()=>{});
+    }, 5000);
+
+    function syncSystemStatus() {
+        fetch(`${GOOGLE_SCRIPT_URL}?method=check_system`, { method: "POST" }).then(res => res.json()).then(data => {
+            currentMaintState = data.maintenance;
+            document.getElementById('maintBlockBanner').style.display = currentMaintState ? 'block' : 'none';
         });
     }
 
-    // 平台內置自訂文字提示機制 (取代 alert 與 confirm)
     function showPlatformAlert(text) {
         const overlay = document.getElementById('customModalOverlay');
         document.getElementById('customModalText').textContent = text;
-        document.getElementById('customModalBtnZone').innerHTML = `<button class="modal-btn modal-btn-confirm" onclick="closePlatformModal()">確認</button>`;
+        const btnText = i18nDict[currentLang].alert_confirm;
+        document.getElementById('customModalBtnZone').innerHTML = `<button class="modal-btn modal-btn-confirm" onclick="closePlatformModal()">${btnText}</button>`;
         overlay.style.display = 'flex';
     }
 
     function showPlatformConfirm(text, onConfirmCallback) {
         const overlay = document.getElementById('customModalOverlay');
         document.getElementById('customModalText').textContent = text;
-        
-        window.modalConfirmAction = function() {
-            closePlatformModal();
-            onConfirmCallback();
-        };
-
+        const btnYes = i18nDict[currentLang].alert_confirm;
+        const btnNo = i18nDict[currentLang].alert_cancel;
+        window.modalConfirmAction = function() { closePlatformModal(); onConfirmCallback(); };
         document.getElementById('customModalBtnZone').innerHTML = `
-            <button class="modal-btn modal-btn-confirm" onclick="window.modalConfirmAction()">確認</button>
-            <button class="modal-btn modal-btn-cancel" onclick="closePlatformModal()">取消</button>
+            <button class="modal-btn modal-btn-confirm" onclick="window.modalConfirmAction()">${btnYes}</button>
+            <button class="modal-btn modal-btn-cancel" onclick="closePlatformModal()">${btnNo}</button>
         `;
         overlay.style.display = 'flex';
     }
 
-    function closePlatformModal() {
-        document.getElementById('customModalOverlay').style.display = 'none';
-    }
+    function closePlatformModal() { document.getElementById('customModalOverlay').style.display = 'none'; }
 
-    // 路由與維護阻斷隔離控制
     function switchGate(gate) {
         document.getElementById('portalErrorMsg').style.display = 'none';
-        
         if (gate === 'student_login') {
-            // 如果開啟了維護模式，完全不讓進入登入介面
             if (currentMaintState) {
-                document.getElementById('portalErrorMsg').textContent = "系統目前處於維護更新模式，無法進入學生報名登入介面。";
+                document.getElementById('portalErrorMsg').textContent = i18nDict[currentLang].maint_msg;
                 document.getElementById('portalErrorMsg').style.display = 'block';
                 return;
             }
@@ -359,27 +443,33 @@
             document.getElementById('portalWrapper').style.display = 'none';
             document.getElementById('adminLoginWrapper').style.display = 'block';
         } else if (gate === 'portal') {
-            document.getElementById('studentLoginWrapper').style.display = 'none';
-            document.getElementById('adminLoginWrapper').style.display = 'none';
-            document.getElementById('portalWrapper').style.display = 'flex';
-            syncSystemStatus();
+            forceLogoutToPortal();
         }
     }
 
-    // 密碼切換檢視
+    function forceLogoutToPortal() {
+        currentUser = null; isAdminMode = false;
+        document.getElementById('stuAcc').value = ""; document.getElementById('stuPwd').value = "";
+        document.getElementById('adminAcc').value = ""; document.getElementById('adminPwd').value = "";
+        document.getElementById('studentLoginWrapper').style.display = 'none';
+        document.getElementById('adminLoginWrapper').style.display = 'none';
+        document.getElementById('mainSystemWrapper').style.display = 'none';
+        document.getElementById('adminFullscreenDashboard').style.display = 'none';
+        document.getElementById('mainContainer').classList.remove('admin-full');
+        document.getElementById('portalWrapper').style.display = 'flex';
+        syncSystemStatus();
+    }
+
     function togglePassword(id) {
         const input = document.getElementById(id);
         const btn = input.nextElementSibling;
         if (input.type === 'password') {
-            input.type = 'text';
-            btn.textContent = "隱藏";
+            input.type = 'text'; btn.textContent = i18nDict[currentLang].btn_hide;
         } else {
-            input.type = 'password';
-            btn.textContent = "顯示";
+            input.type = 'password'; btn.textContent = i18nDict[currentLang].btn_show;
         }
     }
 
-    // 學生忘記密碼
     function toggleForgotPanel() {
         const p = document.getElementById('forgotPanel');
         p.style.display = (p.style.display === 'block') ? 'none' : 'block';
@@ -388,27 +478,18 @@
     function handleRetrievePassword() {
         const acc = document.getElementById('forgotAcc').value.trim();
         const resDiv = document.getElementById('forgotResult');
-        if (!acc) { showPlatformAlert("請填寫學生帳戶名稱。"); return; }
+        if (!acc) return;
         
-        resDiv.style.display = 'block';
-        resDiv.style.color = '#004085';
-        resDiv.textContent = "正在檢索中...";
-
+        resDiv.style.display = 'block'; resDiv.style.color = '#004085'; resDiv.textContent = "...";
         fetch(`${GOOGLE_SCRIPT_URL}?method=find_password&account=${encodeURIComponent(acc)}`, { method: "POST" })
         .then(res => res.json()).then(data => {
             if (data.result === "success") {
                 resDiv.style.color = '#5cb85c';
-                resDiv.innerHTML = `驗證通過，您的密碼為：<span style="font-size:16px; background:#e6f4ea; padding:2px 6px; border-radius:4px;">${data.password}</span>`;
-            } else {
-                resDiv.style.color = '#ff0000';
-                resDiv.textContent = data.message;
-            }
-        }).catch(() => {
-            resDiv.textContent = "系統連線逾時，請重試。";
+                resDiv.innerHTML = `驗證通過 / Verified. Password：<span style="font-size:16px; background:#e6f4ea; padding:2px 6px; border-radius:4px;">${data.password}</span>`;
+            } else { resDiv.style.color = '#ff0000'; resDiv.textContent = data.message; }
         });
     }
 
-    // 學生端認證登入
     function handleStudentLogin(event) {
         event.preventDefault();
         const acc = document.getElementById('stuAcc').value;
@@ -416,88 +497,79 @@
         const errorDiv = document.getElementById('loginError');
         const loader = document.getElementById('loaderOverlay');
 
-        errorDiv.style.display = 'none';
-        document.getElementById('loaderText').textContent = "正在認證學生身份...";
-        loader.style.display = 'flex'; 
+        errorDiv.style.display = 'none'; loader.style.display = 'flex'; 
 
         fetch(`${GOOGLE_SCRIPT_URL}?method=student_login&account=${encodeURIComponent(acc)}&password=${encodeURIComponent(pwd)}`, { method: "POST" })
-        .then(res => res.json())
-        .then(data => {
+        .then(res => res.json()).then(data => {
             loader.style.display = 'none';
             if (data.result === "success") {
-                currentUser = data;
-                isAdminMode = false;
-                document.getElementById('userStatusText').textContent = `歡迎您：${data.name} (${data.userClass}) [學號：${data.id}]`;
+                currentUser = data; isAdminMode = false;
+                document.getElementById('userStatusText').textContent = `${currentLang==='en'?'Welcome':'歡迎您'}：${data.name} (${data.userClass})`;
                 document.getElementById('studentLoginWrapper').style.display = 'none';
                 document.getElementById('mainSystemWrapper').style.display = 'block';
                 fetchCounts();
             } else if (data.result === "maintenance_block") {
                 showPlatformAlert(data.message);
-            } else {
-                errorDiv.style.display = 'block'; 
-            }
-        }).catch(() => {
-            loader.style.display = 'none';
-            showPlatformAlert("系統通訊失敗，請重試。");
-        });
+                forceLogoutToPortal();
+            } else { errorDiv.style.display = 'block'; }
+        }).catch(() => { loader.style.display = 'none'; });
     }
 
-    // 管理員認證登入
     function handleAdminLogin(event) {
         event.preventDefault();
         const acc = document.getElementById('adminAcc').value.trim();
         const pwd = document.getElementById('adminPwd').value;
 
         if (acc === "admin001" && pwd === "Asdf1234") {
-            isAdminMode = true;
-            currentUser = { name: "系統管理員", id: "00000", userClass: "ADMIN" };
-            
+            isAdminMode = true; currentUser = { name: "管理員", id: "000", userClass: "ADMIN" };
             document.getElementById('adminLoginWrapper').style.display = 'none';
-            document.getElementById('mainContainer').classList.add('full-page');
+            document.getElementById('mainContainer').classList.add('admin-full');
             document.getElementById('adminFullscreenDashboard').style.display = 'block';
-            
             fetchAdminData();
-            showPlatformAlert("管理員權限驗證成功，已進入滿版控制台。");
-        } else {
-            showPlatformAlert("管理認證失敗，拒絕進駐。");
-        }
+        } else { showPlatformAlert("管理認證失敗，拒絕進駐。"); }
     }
 
-    // 讀取活動名額
     function fetchCounts() {
         fetch(`${GOOGLE_SCRIPT_URL}?method=get_counts`, { method: "POST" })
         .then(res => res.json()).then(resData => {
-            let html = '<option value="">-- 請選擇活動 --</option>';
+            let html = '<option value="">-- --</option>';
+            let adminHtml = '';
+            
             for (let s in resData.data) {
                 let r = resData.data[s];
-                html += `<option value="${s}" ${r===0?'disabled':''}>${s} (剩 ${r} 名額)</option>`;
+                html += `<option value="${s}" ${r===0?'disabled':''}>${formatSessionText(s, r)}</option>`;
+                
+                if (isAdminMode) {
+                    let parts = s.split(' - '); let actName = parts[0]; 
+                    let timeParts = parts[1].split(' '); let sessNum = timeParts[0]; let timeStr = timeParts[1];
+                    adminHtml += `<tr>
+                        <td style="font-weight:bold; color:#444;">${actName}</td>
+                        <td>${sessNum}</td><td>${timeStr}</td><td>30</td>
+                        <td><span style="color:${r<5?'#d9534f':'#5cb85c'}; font-weight:bold; font-size:15px;">${r}</span></td>
+                    </tr>`;
+                }
             }
             if (!isAdminMode) document.getElementById('regSession').innerHTML = html;
-            document.getElementById('proxySession').innerHTML = html;
+            else { document.getElementById('proxySession').innerHTML = html; document.getElementById('adminQuotaTable').innerHTML = adminHtml; }
         });
     }
 
-    // 管理員專屬：非同步拉取名單數據（不會踢出，不影響登入）
     function fetchAdminData() {
-        document.getElementById('loaderText').textContent = "正在拉取即時雲端數據...";
         document.getElementById('loaderOverlay').style.display = 'flex';
-
         fetch(`${GOOGLE_SCRIPT_URL}?method=admin_get_all`, { method: "POST" })
         .then(res => res.json()).then(data => {
             document.getElementById('loaderOverlay').style.display = 'none';
             if (data.result === "success") {
                 currentMaintState = data.maintenance;
-                const mStatus = document.getElementById('maintStatus');
-                const mBtn = document.getElementById('maintBtn');
+                const mStatus = document.getElementById('maintStatus'); const mBtn = document.getElementById('maintBtn');
                 if (currentMaintState) {
-                    mStatus.textContent = "維護更新中 (全校學生已被切斷通道)"; mStatus.style.color = "#d9534f";
+                    mStatus.textContent = "維護阻斷中 (全校學生已被強制切斷通道)"; mStatus.style.color = "#d9534f";
                     mBtn.textContent = "關閉維護狀態"; mBtn.className = "maint-btn on";
                 } else {
-                    mStatus.textContent = "開放運行中 (學生通道畅通)"; mStatus.style.color = "#5cb85c";
+                    mStatus.textContent = "開放運行中 (學生通道暢通)"; mStatus.style.color = "#5cb85c";
                     mBtn.textContent = "開啟維護模式"; mBtn.className = "maint-btn off";
                 }
 
-                const tbody = document.getElementById('adminTableBody');
                 let html = "";
                 data.list.forEach(item => {
                     html += `<tr>
@@ -509,76 +581,39 @@
                             </select>
                         </td>
                         <td><span style="font-weight:bold; color:green">${item.status}</span></td>
-                        <td>
-                            <button class="act-btn" onclick="triggerAdminDirectCancel(${item.row})">強制除名</button>
-                        </td>
+                        <td><button class="act-btn" onclick="triggerAdminDirectCancel(${item.row})">強制除名</button></td>
                     </tr>`;
                 });
-                tbody.innerHTML = html || "<tr><td colspan='5' style='text-align:center;'>目前尚無報名數據。</td></tr>";
+                document.getElementById('adminTableBody').innerHTML = html || "<tr><td colspan='5' style='text-align:center;'>目前尚無數據。</td></tr>";
                 fetchCounts();
             }
         }).catch(() => document.getElementById('loaderOverlay').style.display = 'none');
     }
 
-    // 管理員執行後台動作
     function executeAdminAction(actionType, rowNum, extraParams = "") {
-        document.getElementById('loaderText').textContent = "正在變更雲端資料庫...";
         document.getElementById('loaderOverlay').style.display = 'flex';
-
         fetch(`${GOOGLE_SCRIPT_URL}?method=admin_action&action=${actionType}&row=${rowNum}${extraParams}`, { method: "POST" })
         .then(res => res.json()).then(data => {
-            document.getElementById('loaderOverlay').style.display = 'none';
-            if (data.result === "success") {
-                fetchAdminData(); 
-            } else { showPlatformAlert("同步失敗。"); }
+            if (data.result === "success") fetchAdminData();
         }).catch(() => document.getElementById('loaderOverlay').style.display = 'none');
     }
 
-    function changeStudentSession(rowNum, newSessionValue) {
-        executeAdminAction('change_session', rowNum, `&newSession=${encodeURIComponent(newSessionValue)}`);
-    }
+    function changeStudentSession(rowNum, newSessionValue) { executeAdminAction('change_session', rowNum, `&newSession=${encodeURIComponent(newSessionValue)}`); }
+    function triggerMaintToggle() { let nextState = !currentMaintState; showPlatformConfirm(`確定將系統切換為 [${nextState ? '維護中' : '開放中'}] 嗎？`, function() { executeAdminAction('toggle_maintenance', 0, `&state=${nextState}`); }); }
+    function triggerAdminDirectCancel(rowNum) { showPlatformConfirm("確定要強制除名並從資料庫剷除嗎？", function() { executeAdminAction('direct_cancel', rowNum); }); }
 
-    function triggerMaintToggle() {
-        let nextState = !currentMaintState;
-        showPlatformConfirm(`確定要將系統切換為 [${nextState ? '系統維護中' : '開放運行中'}] 嗎？`, function() {
-            executeAdminAction('toggle_maintenance', 0, `&state=${nextState}`);
-        });
-    }
-
-    function triggerAdminDirectCancel(rowNum) {
-        showPlatformConfirm("確定要強制除名該報名紀錄嗎？此操作將直接從 Excel 中剷除。", function() {
-            executeAdminAction('direct_cancel', rowNum);
-        });
-    }
-
-    // 管理員幫學生代辦報名
     function handleAdminProxyRegister(event) {
         event.preventDefault();
-        const pName = document.getElementById('proxyName').value.trim();
-        const pClass = document.getElementById('proxyClass').value.trim();
-        const pId = document.getElementById('proxyId').value.trim();
-        const pSession = document.getElementById('proxySession').value;
-
-        document.getElementById('loaderText').textContent = "正在代辦寫入中...";
+        const pName = document.getElementById('proxyName').value.trim(); const pClass = document.getElementById('proxyClass').value.trim();
+        const pId = document.getElementById('proxyId').value.trim(); const pSession = document.getElementById('proxySession').value;
         document.getElementById('loaderOverlay').style.display = 'flex';
-
-        let url = `${GOOGLE_SCRIPT_URL}?method=register&name=${encodeURIComponent(pName)}&studentId=${encodeURIComponent(pId)}&userClass=${encodeURIComponent(pClass)}&session=${encodeURIComponent(pSession)}`;
-        
-        fetch(url, { method: "POST" }).then(res => res.json()).then(data => {
+        fetch(`${GOOGLE_SCRIPT_URL}?method=register&name=${encodeURIComponent(pName)}&studentId=${encodeURIComponent(pId)}&userClass=${encodeURIComponent(pClass)}&session=${encodeURIComponent(pSession)}`, { method: "POST" }).then(res => res.json()).then(data => {
             document.getElementById('loaderOverlay').style.display = 'none';
-            if (data.result === "success") {
-                showPlatformAlert(`代辦完成，已成功加入名單。`);
-                document.getElementById('adminProxyRegForm').reset();
-                fetchAdminData();
-            } else if (data.result === "already_registered") {
-                showPlatformAlert("該學號在此場次已有報名紀錄，不允許重複登記。");
-            } else {
-                showPlatformAlert("登記失敗：" + data.result);
-            }
-        }).catch(() => document.getElementById('loaderOverlay').style.display = 'none');
+            if (data.result === "success") { showPlatformAlert(`代辦成功`); document.getElementById('adminProxyRegForm').reset(); fetchAdminData(); } 
+            else if (data.result === "already_registered") { showPlatformAlert("該學號在此場次已有紀錄，不可重複。"); }
+        });
     }
 
-    // 學生端功能標籤切換
     function switchTab(type) {
         document.getElementById('tabRegister').className = 'tab-btn' + (type === 'register' ? ' active' : '');
         document.getElementById('tabCancel').className = 'tab-btn' + (type === 'cancel' ? ' active' : '');
@@ -587,67 +622,40 @@
         document.getElementById('messageBox').style.display = 'none';
     }
 
-    // 學生端報名與直接剷除機制 (非同步且保留登入)
     function handleSubmit(event, type) {
         event.preventDefault();
-        const msgBox = document.getElementById('messageBox');
         let session = (type === 'register') ? document.getElementById('regSession').value : document.getElementById('canSession').value;
         let url = `${GOOGLE_SCRIPT_URL}?method=${type}&name=${encodeURIComponent(currentUser.name)}&studentId=${encodeURIComponent(currentUser.id)}&userClass=${encodeURIComponent(currentUser.userClass)}&session=${encodeURIComponent(session)}`;
 
         if (type === 'cancel') {
-            showPlatformConfirm("確認要申請取消嗎？此操作將會把您的資料直接從 Excel 報名名單內徹底刪除剷除。", function() {
-                executeStudentSubmit(url, type, session);
-            });
-        } else {
-            executeStudentSubmit(url, type, session);
-        }
+            const confText = currentLang === 'en' ? "Confirm to permanently cancel and remove your record?" : "確認要取消報名嗎？您的紀錄將被直接剷除。";
+            showPlatformConfirm(confText, function() { executeStudentSubmit(url, type, session); });
+        } else { executeStudentSubmit(url, type, session); }
     }
 
     function executeStudentSubmit(url, type, session) {
         const msgBox = document.getElementById('messageBox');
-        msgBox.textContent = "正在與資料庫進行安全通訊..."; 
+        msgBox.textContent = currentLang === 'en' ? "Processing..." : "連線處理中..."; 
         msgBox.className = "message-box info"; msgBox.style.display = "block";
 
         fetch(url, { method: "POST" }).then(res => res.json()).then(data => {
             if (data.result === "success") {
-                let room = session.includes("試食區") ? "2003" : "2004";
-                msgBox.textContent = `成功報名！請準時前往 ${room} 室。`;
-                msgBox.className = "message-box success";
-                document.getElementById('regForm').reset();
-                fetchCounts();
+                let room = session.includes("試食") ? "2003" : "2004";
+                msgBox.textContent = currentLang === 'en' ? `Success! Proceed to Room ${room}.` : `成功報名！請準時前往 ${room} 室。`;
+                msgBox.className = "message-box success"; document.getElementById('regForm').reset(); fetchCounts();
             } else if (data.result === "deleted") {
-                msgBox.textContent = "已成功將該報名紀錄直接從 Excel 資料庫中剷除清空。";
-                msgBox.className = "message-box success";
-                document.getElementById('canForm').reset();
-                fetchCounts();
+                msgBox.textContent = currentLang === 'en' ? "Registration cancelled & removed." : "已成功取消，報名紀錄已從資料庫清空。";
+                msgBox.className = "message-box success"; document.getElementById('canForm').reset(); fetchCounts();
             } else if (data.result === "already_registered") {
-                msgBox.textContent = `登記失敗：您先前已登記過場次【${data.session}】，不可重複報名。`;
-                msgBox.className = "message-box error";
-            } else {
-                msgBox.textContent = "操作未能完成，原因：" + data.result; msgBox.className = "message-box error";
-            }
+                msgBox.textContent = currentLang === 'en' ? "Already registered for this session." : "登記失敗：不可重複報名。"; msgBox.className = "message-box error";
+            } else { msgBox.textContent = "Error: " + data.result; msgBox.className = "message-box error"; }
         });
     }
 
-    // 平台內置確認登出
     function triggerPlatformLogout() {
-        showPlatformConfirm("確認要登出系統，返回身份選取大廳嗎？", function() {
-            currentUser = null;
-            isAdminMode = false;
-            document.getElementById('stuAcc').value = "";
-            document.getElementById('stuPwd').value = "";
-            document.getElementById('adminAcc').value = "";
-            document.getElementById('adminPwd').value = "";
-            document.getElementById('forgotAcc').value = "";
-            document.getElementById('forgotResult').style.display = 'none';
-            document.getElementById('mainContainer').classList.remove('full-page');
-            document.getElementById('mainSystemWrapper').style.display = 'none';
-            document.getElementById('adminFullscreenDashboard').style.display = 'none';
-            switchGate('portal');
-        });
+        const txt = currentLang === 'en' ? "Confirm Logout?" : "確認要登出系統嗎？";
+        showPlatformConfirm(txt, forceLogoutToPortal);
     }
 </script>
-</body>
-</html>
 </body>
 </html>
