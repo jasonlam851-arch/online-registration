@@ -8,9 +8,9 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fcf8f2; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; }
         .registration-container { background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(139,69,19,0.1); width: 100%; max-width: 580px; border-top: 6px solid #b22222; position: relative; box-sizing: border-box; }
         
+        /* v0.04 版本標籤 */
         .version-tag { position: absolute; top: 15px; left: 20px; font-size: 12px; color: #aaaaaa; font-family: monospace; font-weight: bold; }
         
-        /* 燈籠視覺設計裝飾 */
         .lantern-header { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 15px; margin-bottom: 5px; }
         .lantern { font-size: 26px; animation: swing 3s ease-in-out infinite alternate; transform-origin: top center; }
         @keyframes swing { 0% { transform: rotate(-5deg); } 100% { transform: rotate(5deg); } }
@@ -18,419 +18,213 @@
         h2 { margin: 0; color: #b22222; text-align: center; font-size: 24px; }
         .notice-banner { background-color: #fff5f5; border: 1px solid #ffe3e3; color: #d93838; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 14px; }
         
-        /* 學生狀態顯示與登出列 */
-        .user-status-bar { display: flex; justify-content: space-between; align-items: center; background-color: #fcf3f3; border: 1px solid #f5dadb; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; font-weight: bold; color: #b22222; font-size: 14px; }
-        .logout-btn { background-color: #ffffff; color: #d9534f; border: 1px solid #d9534f; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
-        .logout-btn:hover { background-color: #d9534f; color: #ffffff; }
+        /* 學生登入區塊 */
+        .student-login-box h3 { color: #444; text-align: center; margin-bottom: 20px; font-size: 18px; }
+        .error-msg { color: #ff0000; font-size: 13px; font-weight: bold; margin-top: 5px; display: none; text-align: center; }
+        .forgot-pwd { display: block; text-align: center; margin-top: 15px; font-size: 13px; color: #666; text-decoration: underline; cursor: pointer; }
 
-        .maintenance-banner { background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 15px; border-radius: 6px; text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 16px; display: none; }
+        /* 載入動畫遮罩 */
+        #loaderOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #b22222; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader-text { margin-top: 15px; font-weight: bold; color: #b22222; }
+
+        /* 狀態列 */
+        .user-status-bar { display: flex; justify-content: space-between; align-items: center; background-color: #fcf3f3; border: 1px solid #f5dadb; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; font-weight: bold; color: #b22222; font-size: 14px; }
+        .logout-btn { background-color: #ffffff; color: #d9534f; border: 1px solid #d9534f; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; }
         
-        /* 管理員登入區塊樣式 */
-        .admin-trigger-btn { position: absolute; top: 15px; right: 20px; background: none; border: 1px solid #cccccc; color: #666666; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.3s; }
-        .admin-trigger-btn:hover { border-color: #b22222; color: #b22222; }
+        /* 管理員登入 */
+        .admin-trigger-btn { position: absolute; top: 15px; right: 20px; background: none; border: 1px solid #cccccc; color: #666666; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; }
         .admin-panel { background-color: #f9f9f9; border: 1px dashed #cccccc; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none; width: 100%; box-sizing: border-box; }
-        .admin-panel h3 { margin-top: 0; color: #333; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-        .admin-login-form { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-        .admin-login-form input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex: 1; min-width: 120px; font-size: 14px; }
-        .admin-btn { background-color: #444444; color: white; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .admin-btn:hover { background-color: #222222; }
-        .admin-logout-btn { background-color: #d9534f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 10px; }
         .admin-secret-content { background-color: #fff; border: 1px solid #ecc; padding: 12px; border-radius: 4px; margin-top: 10px; }
-        .red-alert { color: #ff0000; font-weight: bold; margin: 0 0 8px 0; }
-        .admin-link { display: inline-block; color: #0066cc; font-weight: bold; text-decoration: underline; word-break: break-all; }
-        
-        /* 更新日誌樣式 */
-        .changelog-box { margin-top: 15px; background-color: #f0f4f8; border-left: 4px solid #0066cc; padding: 10px 15px; border-radius: 0 4px 4px 0; font-size: 13px; color: #333; text-align: left; }
-        .changelog-box h4 { margin: 0 0 5px 0; color: #0066cc; font-size: 14px; }
-        .changelog-box ul { margin: 0; padding-left: 20px; line-height: 1.6; }
-        
-        /* Tab 分頁樣式 */
+
+        /* 分頁 */
         .tab-container { display: flex; width: 100%; margin-bottom: 20px; border-bottom: 2px solid #eeeeee; }
-        .tab-btn { flex: 1; text-align: center; padding: 12px; font-weight: bold; cursor: pointer; color: #777777; font-size: 15px; }
+        .tab-btn { flex: 1; text-align: center; padding: 12px; font-weight: bold; cursor: pointer; color: #777777; }
         .tab-btn.active { color: #b22222; border-bottom: 3px solid #b22222; }
-        
         .form-section { display: none; }
         .form-section.active { display: block; }
         
         .form-group { margin-bottom: 18px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; color: #444444; }
         input[type="text"], input[type="password"], select { width: 100%; padding: 12px; border: 1px solid #cccccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        input:focus, select:focus { border-color: #b22222; outline: none; }
         .required::after { content: " *"; color: #ff4d4d; }
-        
-        .submit-btn { width: 100%; background-color: #b22222; color: white; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
-        .submit-btn:hover { background-color: #8b1a1a; }
-        .cancel-btn { background-color: #d9534f; }
-        .cancel-btn:hover { background-color: #c9302c; }
-        
-        .message-box { margin-top: 20px; padding: 15px; border-radius: 6px; display: none; text-align: center; font-weight: bold; line-height: 1.5; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .info { background-color: #e2f0fe; color: #004085; border: 1px solid #b8daff; }
+        .submit-btn { width: 100%; background-color: #b22222; color: white; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .message-box { margin-top: 20px; padding: 15px; border-radius: 6px; display: none; text-align: center; font-weight: bold; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #e2f0fe; color: #004085; }
     </style>
 </head>
 <body>
 
-<div class="registration-container">
-    <div class="version-tag">0.03v</div>
+<div id="loaderOverlay">
+    <div class="spinner"></div>
+    <div class="loader-text">正在登入中...</div>
+</div>
 
+<div class="registration-container">
+    <div class="version-tag">0.04v</div>
     <button class="admin-trigger-btn" onclick="toggleAdminPanel()">⚙️ 管理員登入</button>
 
     <div class="lantern-header">
-        <span class="lantern">🏮</span>
-        <span class="lantern" style="animation-delay: 0.3s;">🏮</span>
+        <span class="lantern">🏮</span><span class="lantern" style="animation-delay: 0.3s;">🏮</span>
         <h2>中華文化週活動報名系統</h2>
-        <span class="lantern" style="animation-delay: 0.6s;">🏮</span>
-        <span class="lantern" style="animation-delay: 0.9s;">🏮</span>
+        <span class="lantern" style="animation-delay: 0.6s;">🏮</span><span class="lantern" style="animation-delay: 0.9s;">🏮</span>
     </div>
     
     <div id="mainNotice" class="notice-banner">💡 中文學會優先報名，名額有限，先到先得！</div>
-    <div id="maintenanceNotice" class="maintenance-banner">🛠️ 系統更新進行中，目前暫停開放學生報名與查詢。</div>
     
     <div id="adminPanel" class="admin-panel">
         <h3>🔐 管理員控制台</h3>
-        <div id="adminLoginForm" class="admin-login-form">
+        <div id="adminLoginForm">
             <input type="text" id="adminAcc" placeholder="管理員帳號">
             <input type="password" id="adminPwd" placeholder="密碼">
-            <button class="admin-btn" onclick="handleAdminLogin()">登入</button>
+            <button class="submit-btn" onclick="handleAdminLogin()" style="margin-top:10px;">登入</button>
         </div>
         <div id="adminContent" style="display: none;">
             <div class="admin-secret-content">
-                <p class="red-alert">⚠️ 以下是中華文化報名表格連結（請勿分享給學生）</p>
-                <p>連結：<a class="admin-link" href="https://docs.google.com/spreadsheets/d/18jLhLWrz9y_vB9flRzoaXNQuqua-7-g_1Y9C1W2FJGY/edit?usp=sharing" target="_blank">點此開啟 Excel 報名表單</a></p>
+                <p style="color:red; font-weight:bold;">⚠️ 請勿分享報名 Excel 給學生</p>
+                <a href="https://docs.google.com/spreadsheets/d/18jLhLWrz9y_vB9flRzoaXNQuqua-7-g_1Y9C1W2FJGY/edit?usp=sharing" target="_blank">點此開啟報名清單</a>
             </div>
-            
-            <div class="changelog-box">
-                <h4>📜 系統更新日誌</h4>
-                <ul>
-                    <li><strong>v0.03</strong> - 精準對照「工作表二」資料庫進行登入身分比對。</li>
-                    <li><strong>v0.03</strong> - 登入後依據資料庫動態輸出真實姓名、班別與學號。</li>
-                    <li><strong>v0.03</strong> - 新增傳統燈籠(🏮)佳節視覺效果。</li>
-                    <li><strong>v0.02</strong> - 擴展全校班別選項，新增鎖定維護直通機制與容錯修正。</li>
-                    <li><strong>v0.01</strong> - 系統初始版本上線。</li>
-                </ul>
-            </div>
-            <button class="admin-logout-btn" onclick="handleAdminLogout()">安全登出</button>
+            <button class="logout-btn" onclick="location.reload()" style="margin-top:10px;">安全登出</button>
         </div>
     </div>
     
-    <div id="studentLoginWrapper" style="padding: 10px 5px;">
-        <h3>🔑 請先登入學生帳號</h3>
-        <form id="stuLoginForm" onsubmit="handleStudentLogin(event)">
+    <div id="studentLoginWrapper" class="student-login-box">
+        <h3>請先登入學生帳號</h3>
+        <form onsubmit="handleStudentLogin(event)">
             <div class="form-group">
-                <label for="stuAcc" class="required">學生帳號</label>
-                <input type="text" id="stuAcc" required placeholder="請輸入您的學生帳號">
+                <label class="required">學生帳號</label>
+                <input type="text" id="stuAcc" required placeholder="請輸入帳號">
             </div>
-            <div class="form-group">
-                <label for="stuPwd" class="required">密碼</label>
+            <div class="form-group" style="margin-bottom: 5px;">
+                <label class="required">密碼</label>
                 <input type="password" id="stuPwd" required placeholder="請輸入密碼">
             </div>
-            <button type="submit" class="submit-btn" id="stuLoginBtn">確認登入</button>
+            <div id="loginError" class="error-msg">帳號或密碼輸入錯誤，請重新登入！</div>
+            
+            <button type="submit" class="submit-btn" style="margin-top: 15px;">確認登入</button>
+            <span class="forgot-pwd" onclick="alert('請聯絡 管理員！')">忘記密碼</span>
         </form>
     </div>
 
     <div id="mainSystemWrapper" style="display: none;">
         <div class="user-status-bar">
-            <span id="userStatusText">歡迎您：</span>
-            <button class="logout-btn" onclick="handleStudentLogout()">登出系統</button>
+            <span id="userStatusText">歡迎您</span>
+            <button class="logout-btn" onclick="location.reload()">登出系統</button>
         </div>
-
         <div class="tab-container">
             <div class="tab-btn active" id="tabRegister" onclick="switchTab('register')">活動報名</div>
             <div class="tab-btn" id="tabCancel" onclick="switchTab('cancel')">取消報名</div>
         </div>
-        
         <div id="registerSection" class="form-section active">
-            <form id="regForm" onsubmit="handleSubmit(event, 'register')">
+            <form onsubmit="handleSubmit(event, 'register')">
                 <div class="form-group">
-                    <label for="regSession" class="required">選擇活動場次 (括號內顯示剩餘名額)</label>
-                    <select id="regSession" required>
-                        <option value="">-- 正在載入最新名額，請稍候... --</option>
-                    </select>
+                    <label class="required">選擇活動場次 (餘額)</label>
+                    <select id="regSession" required><option value="">載入中...</option></select>
                 </div>
                 <button type="submit" class="submit-btn" id="regBtn">確認送出報名</button>
             </form>
         </div>
-
         <div id="cancelSection" class="form-section">
-            <form id="canForm" onsubmit="handleSubmit(event, 'cancel')">
+            <form onsubmit="handleSubmit(event, 'cancel')">
                 <div class="form-group">
-                    <label for="canSession" class="required">欲申請取消的場次</label>
+                    <label class="required">選擇欲取消場次</label>
                     <select id="canSession" required>
-                        <option value="">-- 請選擇欲取消的場次 --</option>
-                        <option value="中華文化試食區 - 第一場 (09:00-09:30)">中華文化試食區 - 第一場 (09:00-09:30)</option>
-                        <option value="中華文化試食區 - 第二場 (11:00-11:30)">中華文化試食區 - 第二場 (11:00-11:30)</option>
-                        <option value="中華文化體驗活動區 - 第一場 (09:00-09:30)">中華文化體驗活動區 - 第一場 (09:00-09:30)</option>
-                        <option value="中華文化體驗活動區 - 第二場 (11:00-11:30)">中華文化體驗活動區 - 第二場 (11:00-11:30)</option>
+                        <option value="中華文化試食區 - 第一場 (09:00-09:30)">中華文化試食區 - 第一場</option>
+                        <option value="中華文化試食區 - 第二場 (11:00-11:30)">中華文化試食區 - 第二場</option>
+                        <option value="中華文化體驗活動區 - 第一場 (09:00-09:30)">中華文化體驗活動區 - 第一場</option>
+                        <option value="中華文化體驗活動區 - 第二場 (11:00-11:30)">中華文化體驗活動區 - 第二場</option>
                     </select>
                 </div>
-                <button type="submit" class="submit-btn cancel-btn" id="canBtn">確認申請取消報名</button>
+                <button type="submit" class="submit-btn" style="background:#d9534f;">確認申請取消</button>
             </form>
         </div>
-
         <div id="messageBox" class="message-box"></div>
     </div>
 </div>
 
 <script>
-    // 🔗 請精準置換為您最新部署的網頁應用程式網址
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZ2isiKG92FLsxaqryKWxYtIUjUC9JVcgZ5f-fpIXTPR30Qncz1h9SW8EGa5xr2VnUUg/exec";
-    const SYSTEM_MAINTENANCE = false; 
-    let isAdminLoggedIn = false;
-    let currentStudent = null;
+    let currentUser = null;
 
-    window.onload = function() {
-        checkMaintenanceStatus();
-    };
-
-    function checkMaintenanceStatus() {
-        const loginWrapper = document.getElementById('studentLoginWrapper');
-        const mainWrapper = document.getElementById('mainSystemWrapper');
-        const mainNotice = document.getElementById('mainNotice');
-        const maintenanceNotice = document.getElementById('maintenanceNotice');
-        
-        if (SYSTEM_MAINTENANCE && !isAdminLoggedIn) {
-            loginWrapper.style.display = 'none';
-            mainWrapper.style.display = 'none';
-            mainNotice.style.display = 'none';
-            maintenanceNotice.style.display = 'block';
-        } else {
-            maintenanceNotice.style.display = 'none';
-            mainNotice.style.display = 'block';
-            if (isAdminLoggedIn || currentStudent) {
-                loginWrapper.style.display = 'none';
-                mainWrapper.style.display = 'block';
-                fetchCounts();
-            } else {
-                loginWrapper.style.display = 'block';
-                mainWrapper.style.display = 'none';
-            }
-        }
-    }
-
-    // 學生登入處理（直接由工作表二輸出結果）
     function handleStudentLogin(event) {
         event.preventDefault();
-        const acc = document.getElementById('stuAcc').value.trim();
-        const pwd = document.getElementById('stuPwd').value.trim();
-        const loginBtn = document.getElementById('stuLoginBtn');
+        const acc = document.getElementById('stuAcc').value;
+        const pwd = document.getElementById('stuPwd').value;
+        const errorDiv = document.getElementById('loginError');
+        const loader = document.getElementById('loaderOverlay');
 
-        loginBtn.disabled = true;
-        loginBtn.textContent = "正在核對名單...";
+        errorDiv.style.display = 'none';
+        loader.style.display = 'flex'; // 顯示圓圈動畫
 
         fetch(`${GOOGLE_SCRIPT_URL}?method=student_login&account=${encodeURIComponent(acc)}&password=${encodeURIComponent(pwd)}`, { method: "POST" })
         .then(res => res.json())
         .then(data => {
-            loginBtn.disabled = false;
-            loginBtn.textContent = "確認登入";
-
+            loader.style.display = 'none';
             if (data.result === "success") {
-                // 將工作表二輸出的真實姓名、班別、學號綁定到當前瀏覽器
-                currentStudent = {
-                    account: data.account,
-                    name: data.name,
-                    userClass: data.userClass,
-                    id: data.id
-                };
-                
-                // 登入後上方狀態列顯示：真實姓名 (班別)
-                document.getElementById('userStatusText').textContent = `歡迎您：${currentStudent.name} (${currentStudent.userClass})`;
-                alert("學生身分驗證成功！歡迎進入系統。");
-                checkMaintenanceStatus();
+                currentUser = data;
+                document.getElementById('userStatusText').textContent = `歡迎您：${data.name} (${data.userClass})`;
+                document.getElementById('studentLoginWrapper').style.display = 'none';
+                document.getElementById('mainSystemWrapper').style.display = 'block';
+                fetchCounts();
             } else {
-                alert(data.message || "帳號或密碼錯誤，請重新輸入！");
+                errorDiv.style.display = 'block'; // 顯示紅色錯誤文字
             }
-        })
-        .catch(err => {
-            loginBtn.disabled = false;
-            loginBtn.textContent = "確認登入";
-            alert("連線失敗：請確認後台部署網址是否更新並填寫正確。");
+        }).catch(() => {
+            loader.style.display = 'none';
+            alert("系統繁忙，請稍後再試！");
         });
-    }
-
-    function handleStudentLogout() {
-        currentStudent = null;
-        document.getElementById('stuAcc').value = "";
-        document.getElementById('stuPwd').value = "";
-        document.getElementById('regForm').reset();
-        document.getElementById('canForm').reset();
-        document.getElementById('messageBox').style.display = 'none';
-        alert("您已成功安全登出學生系統。");
-        checkMaintenanceStatus();
-    }
-
-    function toggleAdminPanel() {
-        const panel = document.getElementById('adminPanel');
-        panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
-    }
-
-    function handleAdminLogin() {
-        const acc = document.getElementById('adminAcc').value.trim();
-        const pwd = document.getElementById('adminPwd').value;
-        
-        if (acc === "admin001" && pwd === "Asdf1234") {
-            isAdminLoggedIn = true;
-            document.getElementById('adminLoginForm').style.display = 'none';
-            document.getElementById('adminContent').style.display = 'block'; 
-            if (!currentStudent) {
-                currentStudent = { account: "admin", name: "管理員", id: "00000", userClass: "ADMIN" };
-                document.getElementById('userStatusText').textContent = `歡迎您：${currentStudent.name}`;
-            }
-            alert("管理員驗證成功！已成功直通系統。");
-            checkMaintenanceStatus();
-        } else {
-            alert("帳號或密碼錯誤，請重新輸入！");
-        }
-    }
-
-    function handleAdminLogout() {
-        isAdminLoggedIn = false;
-        currentStudent = null;
-        document.getElementById('adminAcc').value = "";
-        document.getElementById('adminPwd').value = "";
-        document.getElementById('adminContent').style.display = 'none';
-        document.getElementById('adminLoginForm').style.display = 'flex';
-        document.getElementById('adminPanel').style.display = 'none';
-        alert("已成功安全登出管理員後台。");
-        checkMaintenanceStatus();
     }
 
     function fetchCounts() {
-        const selectElement = document.getElementById('regSession');
-        if (document.getElementById('mainSystemWrapper').style.display === 'none') return;
-        
         fetch(`${GOOGLE_SCRIPT_URL}?method=get_counts`, { method: "POST" })
-        .then(res => res.json())
-        .then(resData => {
-            if(resData.result === "counts") {
-                let html = '<option value="">-- 請選擇活動與時間 --</option>';
-                for (let session in resData.data) {
-                    let r = resData.data[session];
-                    let label = r === 0 ? "【❌ 名額已滿】" : `【剩餘 ${r} 個名額】`;
-                    html += `<option value="${session}" ${r === 0 ? 'disabled' : ''}>${session} ${label}</option>`;
-                }
-                selectElement.innerHTML = html;
+        .then(res => res.json()).then(resData => {
+            let html = '<option value="">-- 請選擇活動 --</option>';
+            for (let s in resData.data) {
+                let r = resData.data[s];
+                html += `<option value="${s}" ${r===0?'disabled':''}>${s} (剩${r}名額)</option>`;
             }
-        }).catch(err => {
-            selectElement.innerHTML = '<option value="">網域名額載入失敗，請重新整理網頁</option>';
+            document.getElementById('regSession').innerHTML = html;
         });
     }
 
+    function toggleAdminPanel() {
+        const p = document.getElementById('adminPanel');
+        p.style.display = (p.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function handleAdminLogin() {
+        if (document.getElementById('adminAcc').value === "admin001" && document.getElementById('adminPwd').value === "Asdf1234") {
+            document.getElementById('adminLoginForm').style.display = 'none';
+            document.getElementById('adminContent').style.display = 'block';
+        } else { alert("管理員登入失敗"); }
+    }
+
     function switchTab(type) {
-        document.getElementById('messageBox').style.display = 'none';
-        const tabs = ['tabRegister', 'tabCancel'];
-        const sections = ['registerSection', 'cancelSection'];
-        
-        tabs.forEach(t => document.getElementById(t).className = 'tab-btn');
-        sections.forEach(s => document.getElementById(s).className = 'form-section');
-        
-        if(type === 'register') {
-            document.getElementById('tabRegister').className = 'tab-btn active';
-            document.getElementById('registerSection').className = 'form-section active';
-            fetchCounts();
-        } else {
-            document.getElementById('tabCancel').className = 'tab-btn active';
-            document.getElementById('cancelSection').className = 'form-section active';
-        }
+        document.getElementById('tabRegister').className = 'tab-btn' + (type === 'register' ? ' active' : '');
+        document.getElementById('tabCancel').className = 'tab-btn' + (type === 'cancel' ? ' active' : '');
+        document.getElementById('registerSection').className = 'form-section' + (type === 'register' ? ' active' : '');
+        document.getElementById('cancelSection').className = 'form-section' + (type === 'cancel' ? ' active' : '');
     }
 
     function handleSubmit(event, type) {
         event.preventDefault();
-        const messageBox = document.getElementById('messageBox');
-        let urlWithParams = `${GOOGLE_SCRIPT_URL}?method=${type}`;
-        let submitBtn;
-        let session = "";
+        const msgBox = document.getElementById('messageBox');
+        let session = (type === 'register') ? document.getElementById('regSession').value : document.getElementById('canSession').value;
+        let url = `${GOOGLE_SCRIPT_URL}?method=${type}&name=${encodeURIComponent(currentUser.name)}&studentId=${encodeURIComponent(currentUser.id)}&userClass=${encodeURIComponent(currentUser.userClass)}&session=${encodeURIComponent(session)}`;
 
-        if (!currentStudent) {
-            alert("身分驗證失效，請重新登入。");
-            return;
-        }
+        msgBox.textContent = "正在提交..."; msgBox.className = "message-box info"; msgBox.style.display = "block";
 
-        if (type === 'register') {
-            session = document.getElementById('regSession').value;
-            submitBtn = document.getElementById('regBtn');
-            urlWithParams += `&name=${encodeURIComponent(currentStudent.name)}&studentId=${encodeURIComponent(currentStudent.id)}&userClass=${encodeURIComponent(currentStudent.userClass)}&session=${encodeURIComponent(session)}`;
-            submitBtn.disabled = true;
-            showMessage("正在檢查名額與重複登記狀況...", "info");
-        } 
-        else if (type === 'cancel') {
-            session = document.getElementById('canSession').value;
-            submitBtn = document.getElementById('canBtn');
-            urlWithParams += `&name=${encodeURIComponent(currentStudent.name)}&studentId=${encodeURIComponent(currentStudent.id)}&session=${encodeURIComponent(session)}`;
-            if(!confirm("您確定要向管理員申請取消此場次嗎？")) return;
-            submitBtn.disabled = true;
-            showMessage("正在提交取消申請...", "info");
-        }
-
-        fetch(urlWithParams, { method: "POST" })
-        .then(response => {
-            if (response.ok) {
-                return response.json().catch(() => {
-                    return { result: "force_success_by_status" };
-                });
-            }
-            throw new Error('Network response was not ok.');
-        })
-        .then(data => {
-            submitBtn.disabled = false;
-
-            if (data.result === "force_success_by_status") {
-                if (type === 'register') {
-                    let room = session.includes("試食區") ? "2003" : "2004";
-                    showMessage(`你已成功報名，請準時前往 ${room} 室，如未能出席，需提前通知。`, "success");
-                    document.getElementById('regForm').reset();
-                    fetchCounts();
-                } else if (type === 'cancel') {
-                    showMessage("已通知管理員！您的狀態已變更為【請取消】，請靜待管理員於 Excel 進行確認與刪除。", "success");
-                    document.getElementById('canForm').reset();
-                }
-                return;
-            }
-
-            if (type === 'register') {
-                if (data.result === "success") {
-                    let room = session.includes("試食區") ? "2003" : "2004";
-                    showMessage(`你已成功報名，請準時前往 ${room} 室，如未能出席，需提前通知。`, "success");
-                    document.getElementById('regForm').reset();
-                    fetchCounts();
-                } else if (data.result === "already_registered") {
-                    showMessage(`登記失敗！學生 ${data.name} 之前已登記過活動：【${data.session}】。無法重複登記！如需更換，請向管理員申請取消。`, "error");
-                } else if (data.result === "full") {
-                    showMessage("對不起，該場次名額已滿！", "error");
-                }
-            } 
-            else if (type === 'cancel') {
-                if (data.result === "cancel_requested") {
-                    showMessage("已通知管理員！您的狀態已變更為【請取消】，請靜待管理員於 Excel 進行確認與刪除。", "success");
-                    document.getElementById('canForm').reset();
-                } else if (data.result === "cancel_not_found") {
-                    showMessage("找不到對應的報名紀錄！請檢查您的帳號所屬紀錄與選擇之場次是否吻合。", "error");
-                }
-            }
-        })
-        .catch(error => {
-            submitBtn.disabled = false;
-            if (type === 'register') {
-                let room = session.includes("試食區") ? "2003" : "2004";
-                showMessage(`你已成功報名，請準時前往 ${room} 室，如未能出席，需提前通知。`, "success");
-                document.getElementById('regForm').reset();
-                fetchCounts();
-            } else if (type === 'cancel') {
-                showMessage("已通知管理員！您的狀態已變更為【請取消】，請靜待管理員於 Excel 進行確認與刪除。", "success");
-                document.getElementById('canForm').reset();
+        fetch(url, { method: "POST" }).then(res => res.json()).then(data => {
+            if (data.result === "success" || data.result === "cancel_requested") {
+                alert("操作成功！"); location.reload();
             } else {
-                showMessage("系統連線異常，請確認您的後台部署網址是否正確。", "error");
+                msgBox.textContent = "失敗：" + data.result; msgBox.className = "message-box error";
             }
         });
     }
-
-    function showMessage(text, type) {
-        const messageBox = document.getElementById('messageBox');
-        messageBox.textContent = text;
-        messageBox.className = `message-box ${type}`;
-        messageBox.style.display = 'block';
-    }
 </script>
-
 </body>
 </html>
