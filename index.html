@@ -71,6 +71,16 @@
         .quiz-opt-label:hover { background: #fff9e6; border-color: #d4af37; }
         .quiz-score-display { background: #e6f4ea; border: 1px solid #c3e6cb; color: #155724; padding: 15px; border-radius: 8px; text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 20px; }
 
+        /* 新增：登入後實時聊天室美化 */
+        .chat-card { border: 2px solid #d4af37; border-radius: 10px; background: #fffdf9; padding: 18px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .chat-card h4 { margin: 0 0 10px 0; color: #b22222; font-family: 'Kaiti', serif; font-size: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .chat-box-stream { height: 180px; overflow-y: auto; background: white; border: 1px solid #e6cb7b; border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+        .chat-msg-row { font-size: 14px; line-height: 1.4; word-break: break-all; border-bottom: 1px dashed #f3ebd6; padding-bottom: 4px; }
+        .chat-msg-user { color: #b22222; font-weight: bold; }
+        .chat-msg-text { color: #333; margin-left: 5px; font-weight: 500; }
+        .chat-msg-time { color: #aaa; font-size: 11px; float: right; font-family: monospace; }
+        .chat-input-row { display: flex; gap: 8px; }
+
         /* 輸入框與基礎按鈕 */
         .pwd-container { position: relative; width: 100%; }
         .pwd-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 14px; color: #666; font-weight: bold; }
@@ -141,7 +151,7 @@
 </head>
 <body>
 
-<div class="version-tag">0.07v</div>
+<div class="version-tag">0.08v</div>
 
 <header class="hero-header">
     <h1>🏮 中華文化週活動報名系統 🏮</h1>
@@ -243,6 +253,17 @@
                 <button class="logout-btn" onclick="triggerPlatformLogout()">安全登出</button>
             </div>
 
+            <div class="chat-card">
+                <h4><span>💬 全校文化交流·實時聊天群組</span> <span style="font-size:11px; color:#28a745; font-family:sans-serif;">● 實時連線中</span></h4>
+                <div class="chat-box-stream" id="chatBoxStream">
+                    <div class="chat-msg-row" style="text-align:center; color:#aaa; font-size:12px;">正在載入文化大觀園通訊通道...</div>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" id="chatMsgInput" placeholder="在此輸入訊息與全校同學交流..." onkeydown="if(event.key==='Enter') sendGroupChatMessage()">
+                    <button type="button" onclick="sendGroupChatMessage()" style="background:#b22222; color:white; border:none; padding:0 18px; border-radius:6px; font-weight:bold; cursor:pointer;">發送</button>
+                </div>
+            </div>
+
             <div class="quiz-container" id="quizModuleZone">
                 <div class="quiz-title-zone">
                     <span style="font-size:16px; font-weight:bold; color:#b22222;">🏹 每日中華文化有獎問答 🏹</span>
@@ -301,17 +322,13 @@
             </div>
 
             <div class="maint-toggle-zone" style="background:#fff3cd; padding:15px; border-radius:8px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <strong>學生通道動態：</strong><span id="maintStatus">檢查中...</span>
-                </div>
+                <div><strong>學生通道動態：</strong><span id="maintStatus">檢查中...</span></div>
                 <button id="maintBtn" class="maint-btn" style="padding:6px 12px; font-weight:bold; cursor:pointer;" onclick="triggerMaintToggle()">變更狀態</button>
             </div>
 
             <div class="admin-card">
                 <h4 style="color:#00ccff; background:#111; padding:8px; border-radius:4px;">📜 系統運作與安全操作日誌 (實時 Audit Logs)</h4>
-                <div id="adminLogBox" class="log-box">
-                    <div class="log-item">暫無日誌數據。</div>
-                </div>
+                <div id="adminLogBox" class="log-box"><div class="log-item">暫無日誌數據。</div></div>
             </div>
 
             <div class="admin-grid">
@@ -360,8 +377,8 @@
     let currentMaintState = false;
     let currentUser = null;
     let isAdminMode = false;
+    let chatPollingInterval = null; // 聊天室動態輪詢器
 
-    // 固定的中華文化活動清單
     const sessionOptions = [
         "中華文化試食區 - 第一場 (09:00-09:30)",
         "中華文化試食區 - 第二場 (11:00-11:30)",
@@ -369,7 +386,6 @@
         "中華文化體驗活動區 - 第二場 (11:00-11:30)"
     ];
 
-    // 按日期動態生成的每日 3 題文化題庫 (1號~31號每天不同題)
     const bankOfQuestions = [
         [
             { q: "「四書五經」中的「四書」不包含以下哪一本？", o: ["大學", "中庸", "論語", "道德經"], a: 3 },
@@ -383,7 +399,6 @@
         ]
     ];
 
-    // 問答遊戲運行變數
     let currentDayQuestions = [];
     let currentQuestionIndex = 0;
     let quizScore = 0;
@@ -391,13 +406,12 @@
     let quizTimerInterval = null;
 
     window.onload = function() {
-        // 根據當天日期錨定今天的3道題目
         let dayIndex = new Date().getDate() % bankOfQuestions.length;
         currentDayQuestions = bankOfQuestions[dayIndex];
         syncSystemStatus();
     };
 
-    // 每 5 秒心跳掃描：同步維護模式與首頁英雄榜
+    // 每 2.5 秒大廳與維護狀態同步
     setInterval(() => {
         fetch(`${GOOGLE_SCRIPT_URL}?method=check_system`, { method: "POST" })
         .then(r => r.json()).then(data => {
@@ -414,7 +428,7 @@
                 }
             }
         }).catch(()=>{});
-    }, 5000);
+    }, 2500);
 
     function syncSystemStatus() {
         fetch(`${GOOGLE_SCRIPT_URL}?method=check_system`, { method: "POST" }).then(res => res.json()).then(data => {
@@ -442,6 +456,58 @@
             </tr>`;
         });
         tbody.innerHTML = html;
+    }
+
+    // 新增：群組通訊獲取與渲染
+    function fetchGroupChatStream() {
+        if (!currentUser) return;
+        fetch(`${GOOGLE_SCRIPT_URL}?method=get_chat`, { method: "POST" })
+        .then(res => res.json()).then(data => {
+            if (data.result === "success") {
+                renderChatUI(data.chat);
+            }
+        });
+    }
+
+    function renderChatUI(chatList) {
+        const box = document.getElementById('chatBoxStream');
+        if (!chatList || chatList.length === 0) {
+            box.innerHTML = `<div class="chat-msg-row" style="text-align:center; color:#999; font-size:12px;">💬 聊天群組目前很安靜，快來發送第一條文化留言吧！</div>`;
+            return;
+        }
+        let html = "";
+        chatList.forEach(c => {
+            html += `<div class="chat-msg-row">
+                <span class="chat-msg-time">${c.time}</span>
+                <span class="chat-msg-user">${c.user} :</span>
+                <span class="chat-msg-text">${escapeHtml(c.msg)}</span>
+            </div>`;
+        });
+        
+        // 判斷是否需要自動置底（如果使用者沒有往上捲動的話）
+        const isAtBottom = box.scrollHeight - box.clientHeight <= box.scrollTop + 40;
+        box.innerHTML = html;
+        if (isAtBottom) box.scrollTop = box.scrollHeight;
+    }
+
+    function sendGroupChatMessage() {
+        const input = document.getElementById('chatMsgInput');
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = ""; // 即時清空避免重複發送
+        
+        let url = `${GOOGLE_SCRIPT_URL}?method=send_chat&name=${encodeURIComponent(currentUser.name)}&userClass=${encodeURIComponent(currentUser.userClass)}&msg=${encodeURIComponent(text)}`;
+        fetch(url, { method: "POST" }).then(res => res.json()).then(data => {
+            if (data.result === "success") {
+                renderChatUI(data.chat);
+                const box = document.getElementById('chatBoxStream');
+                box.scrollTop = box.scrollHeight; // 強制置底
+            }
+        });
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
     // 啟動問答小遊戲
@@ -498,7 +564,6 @@
             currentQuestionIndex++;
             showQuizQuestion();
         } else {
-            // 問答全部結束，停止計時並提交
             clearInterval(quizTimerInterval);
             let finalTimeUsed = Date.now() - quizStartTime;
             submitQuizScore(quizScore, finalTimeUsed);
@@ -518,11 +583,10 @@
             resZone.style.background = '#d4edda'; resZone.style.color = '#155724'; resZone.style.borderColor = '#c3e6cb';
             resZone.innerHTML = `🎉 答題完畢！您的今日得分：<strong style="font-size:18px; color:#b22222;">${score} / 3</strong> 題！<br>精準用時：${(timeUsed/1000).toFixed(2)} 秒。<br>數據已安全衝擊首頁英雄榜！`;
             
-            syncSystemStatus(); // 刷新首頁排行榜
+            syncSystemStatus();
         }).catch(() => { document.getElementById('loaderOverlay').style.display = 'none'; });
     }
 
-    // 基礎對話框
     function showPlatformAlert(text) {
         const overlay = document.getElementById('customModalOverlay');
         document.getElementById('customModalText').textContent = text;
@@ -564,6 +628,7 @@
     function forceLogoutToPortal() {
         currentUser = null; isAdminMode = false;
         clearInterval(quizTimerInterval);
+        clearInterval(chatPollingInterval); // 停止通訊輪詢
         document.getElementById('stuAcc').value = ""; document.getElementById('stuPwd').value = "";
         document.getElementById('adminAcc').value = ""; document.getElementById('adminPwd').value = "";
         document.getElementById('studentLoginWrapper').style.display = 'none';
@@ -612,7 +677,13 @@
                 document.getElementById('studentLoginWrapper').style.display = 'none';
                 document.getElementById('mainSystemWrapper').style.display = 'block';
                 fetchCounts();
-                initQuizModule(data.hasPlayed); // 載入每日小遊戲
+                initQuizModule(data.hasPlayed);
+                
+                // 登入成功後：立刻加載聊天室並開啟 2 秒實時同步輪詢
+                fetchGroupChatStream();
+                clearInterval(chatPollingInterval);
+                chatPollingInterval = setInterval(fetchGroupChatStream, 2000);
+
             } else if (data.result === "maintenance_block") {
                 showPlatformAlert(data.message); forceLogoutToPortal();
             } else { errorDiv.style.display = 'block'; }
@@ -661,7 +732,6 @@
                 if (currentMaintState) { mStatus.textContent = "維護阻斷中 (全校切斷)"; mStatus.style.color = "red"; } 
                 else { mStatus.textContent = "正常開放中 (通道暢通)"; mStatus.style.color = "green"; }
 
-                // 渲染管理員日誌 (Logs)
                 let logHtml = "";
                 if (data.logs && data.logs.length > 0) {
                     data.logs.forEach(l => {
@@ -675,7 +745,6 @@
                 } else { logHtml = '<div class="log-item">暫無日誌數據。</div>'; }
                 document.getElementById('adminLogBox').innerHTML = logHtml;
 
-                // 渲染報名清單
                 let html = "";
                 data.list.forEach(item => {
                     html += `<tr>
