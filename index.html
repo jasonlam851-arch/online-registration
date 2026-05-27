@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>挺豪餐廳 - 綜合大屏幕</title>
+    <title>LIVE DATA BOARD - TH RESTAURANT</title>
     <script type="importmap">
       {
         "imports": {
@@ -13,25 +13,74 @@
       }
     </script>
     <style>
-        body { font-family: system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 30px; margin: 0; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #334155; padding-bottom: 20px; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-        .monitor-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 20px; text-align: center; }
-        .card-num { font-size: 2.8rem; font-weight: bold; color: #38bdf8; font-family: monospace; }
-        .card-timer { font-size: 2.2rem; font-weight: bold; font-family: monospace; color: #ef4444; background: #2d1921; padding: 8px 0; border-radius: 8px; margin-top: 10px; }
-        #unlockBar { background: #3b82f6; text-align: center; padding: 12px; font-weight: bold; border-radius: 8px; margin-bottom: 20px; cursor: pointer; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", monospace, sans-serif; background-color: #020617; color: #f8fafc; padding: 25px; margin: 0; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1e293b; padding-bottom: 15px; margin-bottom: 25px; }
+        .title { font-size: 1.6rem; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; color: #ffffff; }
+        
+        /* 👑 三欄分組架構 */
+        .group-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .group-column { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; }
+        .col-header { font-size: 1.2rem; font-weight: 800; text-align: center; padding-bottom: 12px; margin-bottom: 15px; border-bottom: 2px solid #334155; letter-spacing: 1px; }
+        .col-A { color: #38bdf8; }
+        .col-B { color: #4ade80; }
+        .col-C { color: #fb923c; }
+        
+        .called-box { background: #1e293b; border-radius: 8px; padding: 20px 10px; text-align: center; border-left: 5px solid currentColor; margin-bottom: 20px; }
+        .called-label { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .called-number { font-size: 3.5rem; font-weight: 800; font-family: monospace; color: #ffffff; line-height: 1; }
+
+        .dining-list-title { font-size: 0.85rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px; }
+        .dining-stack { display: flex; flex-direction: column; gap: 10px; }
+        
+        .dining-row { display: flex; justify-content: space-between; align-items: center; background: #1c1c24; border: 1px solid #272732; padding: 12px 16px; border-radius: 6px; }
+        .d-ticket { font-size: 1.4rem; font-weight: 800; color: #ffffff; font-family: monospace; }
+        .d-timer { font-size: 1.3rem; font-weight: 700; color: #f43f5e; font-family: monospace; background: #2d1921; padding: 2px 8px; border-radius: 4px; }
+
+        #unlockBar { background: #2563eb; text-align: center; padding: 12px; font-weight: 700; border-radius: 6px; margin-bottom: 20px; cursor: pointer; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <div id="unlockBar" onclick="this.style.display='none'">點擊此處啟動大屏幕系統語音廣播功能</div>
+    <div id="unlockBar" onclick="this.style.display='none'">點擊此處授權大屏幕系統音訊播放模組</div>
 
     <div class="header">
-        <div style="font-size: 1.8rem; font-weight: bold; letter-spacing: 2px;">挺豪餐廳 - 客席與叫號大屏幕</div>
-        <div style="font-size: 1.1rem;">當前用餐：<span id="totalTables" style="color:#38bdf8; font-weight:bold;">0</span> 桌</div>
+        <div class="title">TH Restaurant - Queue & Dine System</div>
+        <div style="font-size: 1rem; color: #94a3b8; font-weight: 600;">ACTIVE TABLES: <span id="totalTables" style="color:#38bdf8; font-weight:800;">0</span></div>
     </div>
 
-    <div class="grid" id="monitorGrid"></div>
+    <div class="group-container">
+        
+        <div class="group-column">
+            <div class="col-header col-A">A組 (1位 / SINGLE)</div>
+            <div class="called-box col-A">
+                <div class="called-label">正在叫號 / NOW CALLING</div>
+                <div class="called-number" id="nowA">A---</div>
+            </div>
+            <div class="dining-list-title">已入座用餐倒數</div>
+            <div class="dining-stack" id="stackA"></div>
+        </div>
+
+        <div class="group-column">
+            <div class="col-header col-B">B組 (2-3位 / COUPE)</div>
+            <div class="called-box col-B">
+                <div class="called-label">正在叫號 / NOW CALLING</div>
+                <div class="called-number" id="nowB">B---</div>
+            </div>
+            <div class="dining-list-title">已入座用餐倒數</div>
+            <div class="dining-stack" id="stackB"></div>
+        </div>
+
+        <div class="group-column">
+            <div class="col-header col-C">C組 (4-5位 / FAMILY)</div>
+            <div class="called-box col-C">
+                <div class="called-label">正在叫號 / NOW CALLING</div>
+                <div class="called-number" id="nowC">C---</div>
+            </div>
+            <div class="dining-list-title">已入座用餐倒數</div>
+            <div class="dining-stack" id="stackC"></div>
+        </div>
+
+    </div>
 
     <script type="module">
         import { initializeApp } from "firebase/app";
@@ -62,13 +111,14 @@
             const queue = root.queueSystem || {};
             const combo = root.comboSystem || {};
 
-            // 📢 語音呼叫核心監聽（完美對應重複呼叫）
+            // 1. 叫號及重複呼叫語音處理
             ['A', 'B', 'C'].forEach(g => {
                 const currentNum = queue[g]?.currentCalled || 0;
                 const currentTrigger = queue[g]?.lastCallTimestamp || "";
+                
+                document.getElementById(`now${g}`).innerText = currentNum > 0 ? g + String(currentNum).padStart(3, '0') : g + "---";
 
                 if (currentNum > 0) {
-                    // 只要控制台更新了號碼，或是更新了時間戳 trigger，就強制重新廣播叫號
                     if (isFirstRun) {
                         lastTriggerValue[g] = currentTrigger;
                     } else if (lastTriggerValue[g] !== currentTrigger) {
@@ -79,34 +129,40 @@
             });
             isFirstRun = false;
 
-            // ⏳ 用餐計時卡片
+            // 2. 清理現存計時器與清空 DOM 堆疊
             activeTimers.forEach(t => clearInterval(t)); activeTimers = [];
-            const grid = document.getElementById('monitorGrid');
-            grid.innerHTML = '';
+            const stackA = document.getElementById('stackA'); stackA.innerHTML = '';
+            const stackB = document.getElementById('stackB'); stackB.innerHTML = '';
+            const stackC = document.getElementById('stackC'); stackC.innerHTML = '';
             
-            let count = 0;
+            let totalDine = 0;
             Object.keys(combo).forEach(uid => {
                 const item = combo[uid];
                 if (item.status === "dining") {
-                    count++;
-                    const card = document.createElement('div');
-                    card.className = 'monitor-card';
-                    card.innerHTML = `
-                        <div class="card-num">${item.ticketNumber}</div>
-                        <div style="color:#94a3b8; font-size:0.9rem;">人數：${item.guestsCount}人</div>
-                        <div class="card-timer" id="mon_${uid}">90:00</div>
+                    totalDine++;
+                    const row = document.createElement('div');
+                    row.className = 'dining-row';
+                    row.innerHTML = `
+                        <div class="d-ticket">${item.ticketNumber}</div>
+                        <div class="d-timer" id="mon_${uid}">90:00</div>
                     `;
-                    grid.appendChild(card);
+                    
+                    // 依號碼前綴分流派發至對應的分欄 DOM 中
+                    const prefix = item.ticketNumber.substring(0, 1);
+                    if (prefix === 'A') stackA.appendChild(row);
+                    else if (prefix === 'B') stackB.appendChild(row);
+                    else if (prefix === 'C') stackC.appendChild(row);
+
                     setupPreciseClock(uid, item.startTime);
                 }
             });
-            document.getElementById('totalTables').innerText = count;
+            document.getElementById('totalTables').innerText = totalDine;
         });
 
         function broadcastVoiceCall(type, num) {
             if ('speechSynthesis' in window) {
                 let txt = type === 'A' ? '一人A' : type === 'B' ? '二至三人B' : '四至五人C';
-                let msg = new SpeechSynthesisUtterance(`叮咚，請 ${txt} ${num} 號顧客前往櫃檯入座。`);
+                let msg = new SpeechSynthesisUtterance(`請 ${txt} ${num} 號顧客前往櫃檯入座。`);
                 msg.lang = 'zh-HK'; msg.rate = 0.95;
                 window.speechSynthesis.speak(msg);
             }
@@ -116,7 +172,7 @@
             const el = document.getElementById(`mon_${uid}`);
             function update() {
                 const remain = (90 * 60) - Math.floor(((Date.now() + serverOffset) - startTime) / 1000);
-                if (remain <= 0) { if(el) el.innerText = "時間到"; }
+                if (remain <= 0) { if(el) el.innerText = "EXPIRED"; }
                 else {
                     const m = Math.floor(remain / 60); const s = remain % 60;
                     if(el) el.innerText = String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
