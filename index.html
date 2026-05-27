@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>挺豪餐廳 - 客席即時監控面板</title>
+    <title>挺豪餐廳 - 現場大屏幕</title>
     <script type="importmap">
       {
         "imports": {
@@ -15,28 +15,24 @@
     <style>
         body { font-family: system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 30px; margin: 0; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #334155; padding-bottom: 20px; margin-bottom: 30px; }
-        .title { font-size: 1.8rem; font-weight: bold; letter-spacing: 2px; color: #e2e8f0; }
-        .total-badge { background: #3b82f6; padding: 6px 16px; border-radius: 50px; font-size: 1rem; font-weight: bold; }
-        
+        .title { font-size: 1.8rem; font-weight: bold; letter-spacing: 2px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-        .monitor-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        .card-num { font-size: 2.8rem; font-weight: bold; font-family: monospace; color: #38bdf8; margin-bottom: 5px; }
-        .card-guests { font-size: 1rem; color: #94a3b8; margin-bottom: 15px; }
-        .card-timer { font-size: 2rem; font-weight: bold; font-family: monospace; color: #ef4444; background: #2d1921; padding: 8px 0; border-radius: 8px; border: 1px solid #741b1b; }
-        
-        #noData { display: none; text-align: center; font-size: 1.2rem; color: #64748b; margin-top: 100px; width: 100%; grid-column: 1/-1; }
+        .monitor-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 20px; text-align: center; }
+        .card-num { font-size: 2.8rem; font-weight: bold; color: #38bdf8; font-family: monospace; }
+        .card-timer { font-size: 2.2rem; font-weight: bold; font-family: monospace; color: #ef4444; background: #2d1921; padding: 8px 0; border-radius: 8px; margin-top: 10px; }
+        #unlockBar { background: #3b82f6; text-align: center; padding: 12px; font-weight: bold; border-radius: 8px; margin-bottom: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 
+    <div id="unlockBar" onclick="this.style.display='none'">點擊此處啟動大屏幕系統語音廣播功能</div>
+
     <div class="header">
-        <div class="title">挺豪餐廳 - 現場用餐倒數監控大面板</div>
-        <div class="total-badge">當前用餐桌數：<span id="totalTables">0</span> 桌</div>
+        <div class="title">挺豪餐廳 - 客席時限與叫號綜合大屏幕</div>
+        <div>在店用餐：<span id="totalTables" style="font-weight:bold; color:#38bdf8;">0</span> 桌</div>
     </div>
 
-    <div class="grid" id="monitorGrid">
-        <div id="noData">目前暫無客人在店內用餐</div>
-    </div>
+    <div class="grid" id="monitorGrid"></div>
 
     <script type="module">
         import { initializeApp } from "firebase/app";
@@ -56,65 +52,81 @@
         const db = getDatabase(app);
 
         let activeTimers = [];
+        let serverOffset = 0;
+        let previousCalledState = { A: 0, B: 0, C: 0 };
+        let isFirstLoad = true;
 
-        onValue(ref(db, 'comboSystem'), (snapshot) => {
-            // 清除舊定時器
+        // 時差對齊
+        onValue(ref(db, ".info/serverTimeOffset"), (snapshot) => { serverOffset = snapshot.val() || 0; });
+
+        // 監聽全數據 (處理叫號發聲 + 用餐倒數)
+        onValue(ref(db), (snapshot) => {
+            const root = snapshot.val() || {};
+            const queue = root.queueSystem || {};
+            const combo = root.comboSystem || {};
+
+            // 📢 1. 大屏幕大喇叭廣播語音叫號邏輯
+            ['A', 'B', 'C'].forEach(g => {
+                const current = queue[g]?.currentCalled || 0;
+                // 只要號碼有變動，或者店員按了重複呼叫，就觸發語音
+                if (current > 0 && (previousCalledState[g] !== current || (!isFirstLoad && queue[g]?.lastCallTimestamp))) {
+                    if (!isFirstLoad || previousCalledState[g] !== current) {
+                        broadcastVoiceCall(g, current);
+                    }
+                }
+                previousCalledState[g] = current;
+            });
+            isFirstLoad = false;
+
+            // ⏳ 2. 毫秒同步客席倒數卡片渲染
             activeTimers.forEach(t => clearInterval(t));
             activeTimers = [];
-
             const grid = document.getElementById('monitorGrid');
-            // 保留 noData 節點
-            grid.innerHTML = '<div id="noData">目前暫無客人在店內用餐</div>';
+            grid.innerHTML = '';
             
-            const data = snapshot.val() || {};
-            let diningCount = 0;
-
-            Object.keys(data).forEach(uid => {
-                const item = data[uid];
+            let count = 0;
+            Object.keys(combo).forEach(uid => {
+                const item = combo[uid];
                 if (item.status === "dining") {
-                    diningCount++;
-                    
-                    // 創立監控卡片
+                    count++;
                     const card = document.createElement('div');
                     card.className = 'monitor-card';
-                    card.id = `card_${uid}`;
-                    
                     card.innerHTML = `
                         <div class="card-num">${item.ticketNumber}</div>
-                        <div class="card-guests">入座人數：${item.guestsCount} 人</div>
-                        <div class="card-timer" id="timer_${uid}">90:00</div>
+                        <div style="color:#94a3b8; font-size:0.9rem;">人數：${item.guestsCount}人</div>
+                        <div class="card-timer" id="mon_${uid}">90:00</div>
                     `;
                     grid.appendChild(card);
-
-                    // 綁定獨立倒數計時
-                    setupMonitorClock(uid, item.startTime);
+                    setupPreciseClock(uid, item.startTime);
                 }
             });
-
-            document.getElementById('totalTables').innerText = diningCount;
-            document.getElementById('noData').style.display = diningCount === 0 ? 'block' : 'none';
+            document.getElementById('totalTables').innerText = count;
         });
 
-        function setupMonitorClock(uid, startTime) {
+        function broadcastVoiceCall(type, num) {
+            if ('speechSynthesis' in window) {
+                let txt = type === 'A' ? '一人A' : type === 'B' ? '二至三人B' : '四至五人C';
+                let msg = new SpeechSynthesisUtterance(`叮咚，請 ${txt} ${num} 號顧客前往櫃檯入座。`);
+                msg.lang = 'zh-HK'; msg.rate = 0.9;
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        function setupPreciseClock(uid, startTime) {
             const totalSec = 90 * 60;
-            const timerEl = document.getElementById(`timer_${uid}`);
-            
-            function updateClock() {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const el = document.getElementById(`mon_${uid}`);
+            function update() {
+                const exactNow = Date.now() + serverOffset;
+                const elapsed = Math.floor((exactNow - startTime) / 1000);
                 const remain = totalSec - elapsed;
-                
-                if (remain <= 0) {
-                    if (timerEl) timerEl.innerText = "時間到";
-                } else {
-                    const m = Math.floor(remain / 60);
-                    const s = remain % 60;
-                    if (timerEl) timerEl.innerText = String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
+                if (remain <= 0) { if(el) el.innerText = "時間到"; }
+                else {
+                    const m = Math.floor(remain / 60); const s = remain % 60;
+                    if(el) el.innerText = String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
                 }
             }
-            
-            updateClock();
-            const clockInterval = setInterval(updateClock, 1000);
-            activeTimers.push(clockInterval);
+            update();
+            activeTimers.push(setInterval(update, 1000));
         }
     </script>
 </body>
