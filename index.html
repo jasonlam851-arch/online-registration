@@ -2,8 +2,8 @@
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>挺豪餐廳 - 叫號顯示系統</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>挺豪餐廳 - 叫號控制中心</title>
     <script type="importmap">
       {
         "imports": {
@@ -13,46 +13,62 @@
       }
     </script>
     <style>
-        body { font-family: system-ui, -apple-system, monospace; background-color: #121212; color: white; margin: 0; padding: 20px; height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; }
-        .rest-name { text-align: center; font-size: 3.5rem; font-weight: 700; padding: 15px 0; color: #d4af37; letter-spacing: 12px; margin-bottom: 20px; border-bottom: 3px solid rgba(212,175,55,0.2); text-transform: uppercase; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; flex: 1; margin-bottom: 20px; }
-        .card { background: #1a1a1a; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 4px solid #2a2a2a; }
-        .title { font-size: 2.2rem; font-weight: bold; margin-bottom: 20px; letter-spacing: 2px; }
-        .label-a { color: #63b3ed; }
-        .label-b { color: #fbd38d; }
-        .label-c { color: #9ae6b4; }
-        .number { font-size: 9rem; font-weight: 700; color: white; font-family: Courier, monospace; transition: transform 0.2s; }
-        .blink { animation: flashScreen 0.8s infinite alternate; }
-        @keyframes flashScreen { from { color: white; } to { color: #e53e3e; text-shadow: 0 0 20px #e53e3e; } }
-        .footer { font-size: 1rem; color: #555; text-align: center; letter-spacing: 3px; }
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f0f4f8; padding: 20px; margin: 0; color: #333; }
+        .main-title { text-align: center; color: #102a43; font-size: 1.5rem; font-weight: bold; margin-bottom: 25px; letter-spacing: 1px; }
+        .control-box { background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); border-left: 5px solid; }
+        .border-a { border-left-color: #2b6cb0; }
+        .border-b { border-left-color: #c05621; }
+        .border-c { border-left-color: #2f855a; }
+        .box-title { font-size: 1.15rem; font-weight: bold; margin-bottom: 15px; }
+        .color-a { color: #2b6cb0; }
+        .color-b { color: #c05621; }
+        .color-c { color: #2f855a; }
+        .btn-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        button { flex: 1; padding: 12px; font-size: 1rem; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; color: white; }
+        button:active { opacity: 0.85; }
+        .btn-call { background-color: #38a169; }
+        .btn-recall { background-color: #718096; }
+        .status-info { font-size: 0.9rem; color: #627d98; font-family: monospace; }
+        .btn-reset-danger { width: 100%; margin-top: 20px; padding: 12px; background-color: #e53e3e; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="rest-name">挺豪餐廳</div>
+    <div class="main-title">挺豪餐廳 - 叫號控制面板</div>
 
-    <div class="grid">
-        <div class="card">
-            <div class="title label-a">A組 (1人)</div>
-            <div class="number" id="numA">A---</div>
+    <div class="control-box border-a">
+        <div class="box-title color-a">A組 (1人席)</div>
+        <div class="btn-row">
+            <button class="btn-call" onclick="triggerNext('A')">叫下一位</button>
+            <button class="btn-recall" onclick="triggerRecall('A')">重複呼叫</button>
         </div>
-        <div class="card">
-            <div class="title label-b">B組 (2-3人)</div>
-            <div class="number" id="numB">B---</div>
-        </div>
-        <div class="card">
-            <div class="title label-c">C組 (4-5人)</div>
-            <div class="number" id="numC">C---</div>
-        </div>
+        <div class="status-info">當前叫號: <span id="lblA" style="font-weight:bold; font-size:1.1rem; color:#102a43;">A---</span> | 取號總數: <span id="totA">0</span></div>
     </div>
-    
-    <div class="footer">請掃描二維碼登記，手機將提醒叫號</div>
+
+    <div class="control-box border-b">
+        <div class="box-title color-b">B組 (2-3人席)</div>
+        <div class="btn-row">
+            <button class="btn-call" onclick="triggerNext('B')">叫下一位</button>
+            <button class="btn-recall" onclick="triggerRecall('B')">重複呼叫</button>
+        </div>
+        <div class="status-info">當前叫號: <span id="lblB" style="font-weight:bold; font-size:1.1rem; color:#102a43;">B---</span> | 取號總數: <span id="totB">0</span></div>
+    </div>
+
+    <div class="control-box border-c">
+        <div class="box-title color-c">C組 (4-5人席)</div>
+        <div class="btn-row">
+            <button class="btn-call" onclick="triggerNext('C')">叫下一位</button>
+            <button class="btn-recall" onclick="triggerRecall('C')">重複呼叫</button>
+        </div>
+        <div class="status-info">當前叫號: <span id="lblC" style="font-weight:bold; font-size:1.1rem; color:#102a43;">C---</span> | 取號總數: <span id="totC">0</span></div>
+    </div>
+
+    <button class="btn-reset-danger" onclick="triggerResetAll()">全體叫號數據清零</button>
 
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getDatabase, ref, onValue } from "firebase/database";
+        import { getDatabase, ref, set, onValue } from "firebase/database";
 
-        // Firebase 設定沿用
         const firebaseConfig = {
             apiKey: "AIzaSyDwUF4-rBRG9QGyti2_Smx_PRZ8sZOZL0A",
             authDomain: "my-queue-system-3bcc5.firebaseapp.com",
@@ -65,40 +81,39 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        
-        let localCalled = { A: 0, B: 0, C: 0 };
-        let isFirst = true;
+        let currentData = {};
 
         onValue(ref(db, 'queueSystem'), (snapshot) => {
-            const data = snapshot.val() || {};
-            ['A', 'B', 'C'].forEach(type => {
-                const called = data[type]?.currentCalled || 0;
-                const element = document.getElementById(`num${type}`);
-                
-                element.innerText = called > 0 ? type + String(called).padStart(3, '0') : type + "---";
-                
-                // 新號碼提醒閃爍
-                if (!isFirst && called > localCalled[type]) {
-                    element.classList.add('blink');
-                    setTimeout(() => element.classList.remove('blink'), 5000); 
-                    speak(type, called);
-                }
-                localCalled[type] = called;
+            currentData = snapshot.val() || {};
+            ['A', 'B', 'C'].forEach(g => {
+                const c = currentData[g]?.currentCalled || 0;
+                const t = currentData[g]?.totalIssued || 0;
+                document.getElementById(`lbl${g}`).innerText = c > 0 ? g + String(c).padStart(3, '0') : g + "---";
+                document.getElementById(`tot${g}`).innerText = t;
             });
-            isFirst = false;
         });
 
-        // 專業化語音
-        function speak(type, num) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                let groupStr = type === 'A' ? '一人 A' : type === 'B' ? '二至三人 B' : '四至五人 C';
-                let text = `請 ${groupStr} ${num} 號到櫃檯`;
-                let ut = new SpeechSynthesisUtterance(text);
-                ut.lang = 'zh-HK'; ut.rate = 0.92;
-                window.speechSynthesis.speak(ut);
+        window.triggerNext = function(g) {
+            const c = currentData[g]?.currentCalled || 0;
+            const t = currentData[g]?.totalIssued || 0;
+            if (c < t) set(ref(db, `queueSystem/${g}/currentCalled`), c + 1);
+            else alert(`${g}組候位名單已空。`);
+        };
+
+        window.triggerRecall = function(g) {
+            const c = currentData[g]?.currentCalled || 0;
+            if (c > 0) set(ref(db, `queueSystem/${g}/currentCalled`), c);
+        };
+
+        window.triggerResetAll = function() {
+            if (confirm("確認重置全體排隊號碼嗎？")) {
+                set(ref(db, 'queueSystem'), {
+                    A: { currentCalled: 0, totalIssued: 0 },
+                    B: { currentCalled: 0, totalIssued: 0 },
+                    C: { currentCalled: 0, totalIssued: 0 }
+                });
             }
-        }
+        };
     </script>
 </body>
 </html>
