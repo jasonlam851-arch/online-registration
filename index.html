@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>挺豪餐廳 - 現場大屏幕</title>
+    <title>挺豪餐廳 - 綜合大屏幕</title>
     <script type="importmap">
       {
         "imports": {
@@ -15,8 +15,7 @@
     <style>
         body { font-family: system-ui, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 30px; margin: 0; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #334155; padding-bottom: 20px; margin-bottom: 30px; }
-        .title { font-size: 1.8rem; font-weight: bold; letter-spacing: 2px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
         .monitor-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 20px; text-align: center; }
         .card-num { font-size: 2.8rem; font-weight: bold; color: #38bdf8; font-family: monospace; }
         .card-timer { font-size: 2.2rem; font-weight: bold; font-family: monospace; color: #ef4444; background: #2d1921; padding: 8px 0; border-radius: 8px; margin-top: 10px; }
@@ -28,8 +27,8 @@
     <div id="unlockBar" onclick="this.style.display='none'">點擊此處啟動大屏幕系統語音廣播功能</div>
 
     <div class="header">
-        <div class="title">挺豪餐廳 - 客席時限與叫號綜合大屏幕</div>
-        <div>在店用餐：<span id="totalTables" style="font-weight:bold; color:#38bdf8;">0</span> 桌</div>
+        <div style="font-size: 1.8rem; font-weight: bold; letter-spacing: 2px;">挺豪餐廳 - 客席與叫號大屏幕</div>
+        <div style="font-size: 1.1rem;">當前用餐：<span id="totalTables" style="color:#38bdf8; font-weight:bold;">0</span> 桌</div>
     </div>
 
     <div class="grid" id="monitorGrid"></div>
@@ -53,34 +52,35 @@
 
         let activeTimers = [];
         let serverOffset = 0;
-        let previousCalledState = { A: 0, B: 0, C: 0 };
-        let isFirstLoad = true;
+        let lastTriggerValue = { A: "", B: "", C: "" };
+        let isFirstRun = true;
 
-        // 時差對齊
         onValue(ref(db, ".info/serverTimeOffset"), (snapshot) => { serverOffset = snapshot.val() || 0; });
 
-        // 監聽全數據 (處理叫號發聲 + 用餐倒數)
         onValue(ref(db), (snapshot) => {
             const root = snapshot.val() || {};
             const queue = root.queueSystem || {};
             const combo = root.comboSystem || {};
 
-            // 📢 1. 大屏幕大喇叭廣播語音叫號邏輯
+            // 📢 語音呼叫核心監聽（完美對應重複呼叫）
             ['A', 'B', 'C'].forEach(g => {
-                const current = queue[g]?.currentCalled || 0;
-                // 只要號碼有變動，或者店員按了重複呼叫，就觸發語音
-                if (current > 0 && (previousCalledState[g] !== current || (!isFirstLoad && queue[g]?.lastCallTimestamp))) {
-                    if (!isFirstLoad || previousCalledState[g] !== current) {
-                        broadcastVoiceCall(g, current);
+                const currentNum = queue[g]?.currentCalled || 0;
+                const currentTrigger = queue[g]?.lastCallTimestamp || "";
+
+                if (currentNum > 0) {
+                    // 只要控制台更新了號碼，或是更新了時間戳 trigger，就強制重新廣播叫號
+                    if (isFirstRun) {
+                        lastTriggerValue[g] = currentTrigger;
+                    } else if (lastTriggerValue[g] !== currentTrigger) {
+                        lastTriggerValue[g] = currentTrigger;
+                        broadcastVoiceCall(g, currentNum);
                     }
                 }
-                previousCalledState[g] = current;
             });
-            isFirstLoad = false;
+            isFirstRun = false;
 
-            // ⏳ 2. 毫秒同步客席倒數卡片渲染
-            activeTimers.forEach(t => clearInterval(t));
-            activeTimers = [];
+            // ⏳ 用餐計時卡片
+            activeTimers.forEach(t => clearInterval(t)); activeTimers = [];
             const grid = document.getElementById('monitorGrid');
             grid.innerHTML = '';
             
@@ -107,18 +107,15 @@
             if ('speechSynthesis' in window) {
                 let txt = type === 'A' ? '一人A' : type === 'B' ? '二至三人B' : '四至五人C';
                 let msg = new SpeechSynthesisUtterance(`叮咚，請 ${txt} ${num} 號顧客前往櫃檯入座。`);
-                msg.lang = 'zh-HK'; msg.rate = 0.9;
+                msg.lang = 'zh-HK'; msg.rate = 0.95;
                 window.speechSynthesis.speak(msg);
             }
         }
 
         function setupPreciseClock(uid, startTime) {
-            const totalSec = 90 * 60;
             const el = document.getElementById(`mon_${uid}`);
             function update() {
-                const exactNow = Date.now() + serverOffset;
-                const elapsed = Math.floor((exactNow - startTime) / 1000);
-                const remain = totalSec - elapsed;
+                const remain = (90 * 60) - Math.floor(((Date.now() + serverOffset) - startTime) / 1000);
                 if (remain <= 0) { if(el) el.innerText = "時間到"; }
                 else {
                     const m = Math.floor(remain / 60); const s = remain % 60;
